@@ -108,6 +108,8 @@ h3 {
 .status-card,
 .auction-panel,
 .npc-panel,
+.inventory-panel,
+.appraisal-panel,
 .log-panel {
   border: 1px solid var(--border);
   border-radius: 24px;
@@ -142,6 +144,8 @@ h3 {
 
 .auction-panel,
 .npc-panel,
+.inventory-panel,
+.appraisal-panel,
 .log-panel {
   padding: 22px;
 }
@@ -292,14 +296,6 @@ h3 {
   }
 }
 
-.inventory-panel {
-  padding: 22px;
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  background: rgba(27, 31, 42, 0.88);
-  box-shadow: var(--shadow);
-}
-
 .inventory-list {
   display: grid;
   gap: 12px;
@@ -326,4 +322,54 @@ h3 {
 button:not(:disabled) {
   cursor: pointer;
   opacity: 1;
+}
+
+
+.appraisal-result {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+}
+
+.appraisal-result p {
+  margin-bottom: 0;
+  line-height: 1.6;
+}
+
+.appraisal-item-name {
+  color: var(--text);
+  font-weight: 900;
+}
+
+.appraisal-result dl {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 0;
+}
+
+.appraisal-result div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+}
+
+.appraisal-result dt {
+  color: var(--muted);
+}
+
+.appraisal-result dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 900;
+}
+
+.appraisal-result .profit dd {
+  color: var(--green);
+}
+
+.appraisal-result .loss dd {
+  color: #fc8181;
 }

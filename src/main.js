@@ -1,9 +1,9 @@
 const gameState = {
-  phase: 1,
-  step: '1.5',
-  stepIndex: 5,
-  phaseStepTotal: 5,
-  stepName: '实现成交与库存',
+  phase: 2,
+  step: '2.1',
+  stepIndex: 1,
+  phaseStepTotal: 3,
+  stepName: '实现鉴定结果',
   day: 1,
   totalDays: 7,
   cash: 1000,
@@ -32,7 +32,7 @@ function pickRandomItem(items) {
 }
 
 function renderStepStatus() {
-  document.querySelector('#stepText').textContent = `阶段 ${gameState.phase} · Step ${gameState.step} / 1.5`;
+  document.querySelector('#stepText').textContent = `阶段 ${gameState.phase} · Step ${gameState.step}（${gameState.stepIndex}/${gameState.phaseStepTotal}）`;
   document.querySelector('#stepHint').textContent = `当前步骤：阶段 ${gameState.phase} / Step ${gameState.step}（${gameState.stepIndex}/${gameState.phaseStepTotal}）${gameState.stepName}。`;
 }
 
@@ -61,6 +61,19 @@ function renderNpcs() {
   }).join('');
 }
 
+function getProfitText(entry) {
+  const profit = entry.item.realValue - entry.purchasePrice;
+  if (profit > 0) {
+    return `预计赚 ${formatCurrency(profit)}`;
+  }
+
+  if (profit < 0) {
+    return `预计亏 ${formatCurrency(Math.abs(profit))}`;
+  }
+
+  return '预计不赚不亏';
+}
+
 function renderInventory() {
   const inventoryList = document.querySelector('#inventoryList');
   if (gameState.inventory.length === 0) {
@@ -71,9 +84,32 @@ function renderInventory() {
   inventoryList.innerHTML = gameState.inventory.map((entry) => `
     <li>
       <strong>${entry.item.name}</strong>
-      <span>成交价：${formatCurrency(entry.purchasePrice)} · 品类：${entry.item.category}</span>
+      <span>成交价：${formatCurrency(entry.purchasePrice)} · 鉴定价：${formatCurrency(entry.item.realValue)} · ${getProfitText(entry)}</span>
     </li>
   `).join('');
+}
+
+function renderAppraisal() {
+  const appraisalResult = document.querySelector('#appraisalResult');
+  const lastEntry = gameState.inventory.at(-1);
+
+  if (!lastEntry) {
+    appraisalResult.innerHTML = '<p>拍下物品后，这里会显示真实价值与赚亏预估。</p>';
+    return;
+  }
+
+  const profit = lastEntry.item.realValue - lastEntry.purchasePrice;
+  const resultClass = profit >= 0 ? 'profit' : 'loss';
+  const resultText = getProfitText(lastEntry);
+
+  appraisalResult.innerHTML = `
+    <p class="appraisal-item-name">${lastEntry.item.name}</p>
+    <dl>
+      <div><dt>成交价</dt><dd>${formatCurrency(lastEntry.purchasePrice)}</dd></div>
+      <div><dt>真实价值</dt><dd>${formatCurrency(lastEntry.item.realValue)}</dd></div>
+      <div class="${resultClass}"><dt>鉴定结论</dt><dd>${resultText}</dd></div>
+    </dl>
+  `;
 }
 
 function addLog(text) {
@@ -104,6 +140,7 @@ function renderState() {
   document.querySelector('#leaderText').textContent = gameState.leader;
   renderNpcs();
   renderInventory();
+  renderAppraisal();
   renderPlayerActions();
 }
 
@@ -121,11 +158,13 @@ function settleAuction() {
     }
 
     gameState.cash -= gameState.currentPrice;
-    gameState.inventory.push({
+    const inventoryEntry = {
       item: gameState.currentItem,
       purchasePrice: gameState.currentPrice,
-    });
+    };
+    gameState.inventory.push(inventoryEntry);
     addLog(`成交！你以 ${formatCurrency(gameState.currentPrice)} 拍下「${gameState.currentItem.name}」，物品已进入库存。`);
+    addLog(`鉴定完成：真实价值 ${formatCurrency(gameState.currentItem.realValue)}，${getProfitText(inventoryEntry)}。`);
     return;
   }
 
