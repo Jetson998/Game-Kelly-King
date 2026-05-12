@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>捡漏之王</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="hero">
+      <p class="eyebrow">Auction Mini Game</p>
+      <h1>捡漏之王</h1>
+      <p class="subtitle">低价竞拍，高价转卖，在一屋子老狐狸里杀出血路。</p>
+    </header>
+
+    <section class="status-bar" aria-label="玩家状态">
+      <article class="status-card">
+        <span class="status-label">当前天数</span>
+        <strong id="dayText">第 1 天 / 共 7 天</strong>
+      </article>
+      <article class="status-card">
+        <span class="status-label">现金</span>
+        <strong id="cashText">￥1,000</strong>
+      </article>
+      <article class="status-card">
+        <span class="status-label">库存</span>
+        <strong id="inventoryText">0 / 3</strong>
+      </article>
+      <article class="status-card hot">
+        <span class="status-label">市场热点</span>
+        <strong id="hotCategoryText">老相机</strong>
+      </article>
+    </section>
+
+    <section class="game-layout">
+      <article class="auction-panel">
+        <div class="section-title-row">
+          <div>
+            <p class="eyebrow">Current Lot</p>
+            <h2>今日拍品</h2>
+          </div>
+          <span class="lot-index">1 / 5</span>
+        </div>
+
+        <div class="item-card">
+          <div class="item-image-placeholder">?</div>
+          <div class="item-info">
+            <h3 id="itemName">老式胶片相机</h3>
+            <p id="itemMeta">品类：相机 · 品相：七成新</p>
+            <p id="itemDescription">卖家说是家里翻出来的，不太懂，镜头边缘有些磨损。</p>
+            <div class="item-tags">
+              <span>起拍价：￥200</span>
+              <span>模糊估值：￥300 - ￥1,500</span>
+              <span>风险：品牌标识有磨损</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bid-box">
+          <div>
+            <span class="status-label">当前价格</span>
+            <strong id="currentPriceText">￥200</strong>
+          </div>
+          <div>
+            <span class="status-label">最高出价</span>
+            <strong id="leaderText">暂无</strong>
+          </div>
+        </div>
+
+        <div class="action-row" aria-label="竞价操作">
+          <button type="button" disabled>+50</button>
+          <button type="button" disabled>+100</button>
+          <button type="button" disabled>+500</button>
+          <button type="button" class="ghost" disabled>放弃</button>
+        </div>
+        <p class="hint">Step 1.1 当前是静态骨架，按钮暂不可用。</p>
+      </article>
+
+      <aside class="side-panel">
+        <section class="npc-panel">
+          <div class="section-title-row">
+            <div>
+              <p class="eyebrow">Rivals</p>
+              <h2>竞拍对手</h2>
+            </div>
+          </div>
+          <ul class="npc-list">
+            <li>
+              <strong>新手小白</strong>
+              <span>看起来有点兴奋，容易上头。</span>
+            </li>
+            <li>
+              <strong>二手贩子</strong>
+              <span>正在冷静观察价格。</span>
+            </li>
+            <li>
+              <strong>抬价托</strong>
+              <span>笑得太明显，不知道是不是在坑你。</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="log-panel">
+          <div class="section-title-row">
+            <div>
+              <p class="eyebrow">Auction Log</p>
+              <h2>拍卖日志</h2>
+            </div>
+          </div>
+          <ol id="logList" class="log-list">
+            <li>欢迎来到跳蚤市场，第一件拍品已经上台。</li>
+            <li>本步骤只展示 UI 骨架，下一步会接入拍品数据。</li>
+          </ol>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <script src="./main.js"></script>
+</body>
+</html>
