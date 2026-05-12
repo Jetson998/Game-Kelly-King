@@ -40,7 +40,7 @@
             <p class="eyebrow">Current Lot</p>
             <h2>今日拍品</h2>
           </div>
-          <span id="stepText" class="lot-index">阶段 1 · Step 1.4 / 1.5</span>
+          <span id="stepText" class="lot-index">阶段 1 · Step 1.5 / 1.5</span>
         </div>
 
         <div class="item-card">
@@ -73,8 +73,9 @@
           <button type="button" data-bid-amount="100">+100</button>
           <button type="button" data-bid-amount="500">+500</button>
           <button type="button" id="passButton" class="ghost">放弃</button>
+          <button type="button" id="nextItemButton" class="ghost" disabled>下一件</button>
         </div>
-        <p id="stepHint" class="hint">当前步骤：阶段 1 / Step 1.4（4/5）实现简单 NPC 出价。</p>
+        <p id="stepHint" class="hint">当前步骤：阶段 1 / Step 1.5（5/5）实现成交与库存。</p>
       </article>
 
       <aside class="side-panel">
@@ -101,6 +102,18 @@
           </ul>
         </section>
 
+        <section class="inventory-panel">
+          <div class="section-title-row">
+            <div>
+              <p class="eyebrow">Inventory</p>
+              <h2>我的库存</h2>
+            </div>
+          </div>
+          <ul id="inventoryList" class="inventory-list">
+            <li>暂无库存。</li>
+          </ul>
+        </section>
+
         <section class="log-panel">
           <div class="section-title-row">
             <div>
@@ -110,7 +123,7 @@
           </div>
           <ol id="logList" class="log-list">
             <li>欢迎来到跳蚤市场，第一件拍品已经上台。</li>
-            <li>当前步骤：阶段 1 / Step 1.4（4/5）实现简单 NPC 出价。</li>
+            <li>当前步骤：阶段 1 / Step 1.5（5/5）实现成交与库存。</li>
           </ol>
         </section>
       </aside>

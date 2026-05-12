@@ -291,3 +291,39 @@ h3 {
     min-height: 120px;
   }
 }
+
+.inventory-panel {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(27, 31, 42, 0.88);
+  box-shadow: var(--shadow);
+}
+
+.inventory-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.inventory-list li {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(104, 211, 145, 0.09);
+}
+
+.inventory-list strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.inventory-list span {
+  color: var(--muted);
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+  opacity: 1;
+}

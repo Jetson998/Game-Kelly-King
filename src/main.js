@@ -1,21 +1,23 @@
 const gameState = {
   phase: 1,
-  step: '1.4',
-  stepIndex: 4,
+  step: '1.5',
+  stepIndex: 5,
   phaseStepTotal: 5,
-  stepName: '实现简单 NPC 出价',
+  stepName: '实现成交与库存',
   day: 1,
   totalDays: 7,
   cash: 1000,
-  inventoryCount: 0,
+  inventory: [],
   inventoryLimit: 3,
   hotCategory: '相机',
   currentPrice: 0,
   leader: '暂无',
   currentItem: null,
   npcs: [],
+  seenItemIds: [],
   hasPassed: false,
   auctionEnded: false,
+  settlementDone: false,
 };
 
 function formatCurrency(value) {
@@ -23,8 +25,10 @@ function formatCurrency(value) {
 }
 
 function pickRandomItem(items) {
-  const index = Math.floor(Math.random() * items.length);
-  return items[index];
+  const availableItems = items.filter((item) => !gameState.seenItemIds.includes(item.id));
+  const pool = availableItems.length > 0 ? availableItems : items;
+  const index = Math.floor(Math.random() * pool.length);
+  return pool[index];
 }
 
 function renderStepStatus() {
@@ -57,6 +61,21 @@ function renderNpcs() {
   }).join('');
 }
 
+function renderInventory() {
+  const inventoryList = document.querySelector('#inventoryList');
+  if (gameState.inventory.length === 0) {
+    inventoryList.innerHTML = '<li>暂无库存。</li>';
+    return;
+  }
+
+  inventoryList.innerHTML = gameState.inventory.map((entry) => `
+    <li>
+      <strong>${entry.item.name}</strong>
+      <span>成交价：${formatCurrency(entry.purchasePrice)} · 品类：${entry.item.category}</span>
+    </li>
+  `).join('');
+}
+
 function addLog(text) {
   const logList = document.querySelector('#logList');
   const item = document.createElement('li');
@@ -65,24 +84,57 @@ function addLog(text) {
 }
 
 function renderPlayerActions() {
+  const inventoryFull = gameState.inventory.length >= gameState.inventoryLimit;
   document.querySelectorAll('[data-bid-amount]').forEach((button) => {
     const bidAmount = Number(button.dataset.bidAmount);
     const nextPrice = gameState.currentPrice + bidAmount;
-    button.disabled = gameState.hasPassed || gameState.auctionEnded || nextPrice > gameState.cash;
+    button.disabled = gameState.hasPassed || gameState.auctionEnded || inventoryFull || nextPrice > gameState.cash;
   });
 
   document.querySelector('#passButton').disabled = gameState.hasPassed || gameState.auctionEnded;
+  document.querySelector('#nextItemButton').disabled = !gameState.auctionEnded;
 }
 
 function renderState() {
   document.querySelector('#dayText').textContent = `第 ${gameState.day} 天 / 共 ${gameState.totalDays} 天`;
   document.querySelector('#cashText').textContent = formatCurrency(gameState.cash);
-  document.querySelector('#inventoryText').textContent = `${gameState.inventoryCount} / ${gameState.inventoryLimit}`;
+  document.querySelector('#inventoryText').textContent = `${gameState.inventory.length} / ${gameState.inventoryLimit}`;
   document.querySelector('#hotCategoryText').textContent = gameState.hotCategory;
   document.querySelector('#currentPriceText').textContent = formatCurrency(gameState.currentPrice);
   document.querySelector('#leaderText').textContent = gameState.leader;
   renderNpcs();
+  renderInventory();
   renderPlayerActions();
+}
+
+function settleAuction() {
+  if (gameState.settlementDone) {
+    return;
+  }
+
+  gameState.settlementDone = true;
+
+  if (gameState.leader === '你') {
+    if (gameState.inventory.length >= gameState.inventoryLimit) {
+      addLog('库存已满，无法拿下这件拍品。');
+      return;
+    }
+
+    gameState.cash -= gameState.currentPrice;
+    gameState.inventory.push({
+      item: gameState.currentItem,
+      purchasePrice: gameState.currentPrice,
+    });
+    addLog(`成交！你以 ${formatCurrency(gameState.currentPrice)} 拍下「${gameState.currentItem.name}」，物品已进入库存。`);
+    return;
+  }
+
+  if (gameState.leader !== '暂无') {
+    addLog(`落槌！${gameState.leader} 以 ${formatCurrency(gameState.currentPrice)} 拍走「${gameState.currentItem.name}」。`);
+    return;
+  }
+
+  addLog(`流拍：「${gameState.currentItem.name}」没人拿下。`);
 }
 
 function maybeEndAuction() {
@@ -92,13 +144,7 @@ function maybeEndAuction() {
   }
 
   gameState.auctionEnded = true;
-  if (gameState.leader === '你') {
-    addLog(`本轮竞价暂时由你领先：${formatCurrency(gameState.currentPrice)}。成交和入库将在 Step 1.5 实现。`);
-  } else if (gameState.leader !== '暂无') {
-    addLog(`${gameState.leader} 暂时拿下这件拍品。成交流程将在 Step 1.5 实现。`);
-  } else {
-    addLog('所有人都放弃了这件拍品。');
-  }
+  settleAuction();
 }
 
 function runNpcBiddingRound() {
@@ -140,6 +186,12 @@ function placePlayerBid(increment) {
     return;
   }
 
+  if (gameState.inventory.length >= gameState.inventoryLimit) {
+    addLog('库存已满，不能继续拍下新物品。');
+    renderState();
+    return;
+  }
+
   const nextPrice = gameState.currentPrice + increment;
   if (nextPrice > gameState.cash) {
     addLog(`现金不足：继续加价到 ${formatCurrency(nextPrice)} 会超过你当前现金 ${formatCurrency(gameState.cash)}。`);
@@ -161,6 +213,21 @@ function passCurrentItem() {
   renderState();
 }
 
+function loadNextItem() {
+  gameState.currentItem = pickRandomItem(AUCTION_ITEMS);
+  gameState.seenItemIds.push(gameState.currentItem.id);
+  gameState.currentPrice = gameState.currentItem.startPrice;
+  gameState.leader = '暂无';
+  gameState.npcs = createAuctionNpcs(gameState.currentItem);
+  gameState.hasPassed = false;
+  gameState.auctionEnded = false;
+  gameState.settlementDone = false;
+
+  renderItem(gameState.currentItem);
+  renderState();
+  addLog(`下一件拍品上台：「${gameState.currentItem.name}」。`);
+}
+
 function bindPlayerActions() {
   document.querySelectorAll('[data-bid-amount]').forEach((button) => {
     button.addEventListener('click', () => {
@@ -169,6 +236,7 @@ function bindPlayerActions() {
   });
 
   document.querySelector('#passButton').addEventListener('click', passCurrentItem);
+  document.querySelector('#nextItemButton').addEventListener('click', loadNextItem);
 }
 
 function initGame() {
@@ -176,15 +244,9 @@ function initGame() {
     throw new Error('拍品数据为空，无法开始拍卖。');
   }
 
-  gameState.currentItem = pickRandomItem(AUCTION_ITEMS);
-  gameState.currentPrice = gameState.currentItem.startPrice;
-  gameState.npcs = createAuctionNpcs(gameState.currentItem);
-
   renderStepStatus();
-  renderItem(gameState.currentItem);
   bindPlayerActions();
-  renderState();
-  addLog(`随机抽到拍品：${gameState.currentItem.name}。真实价值已隐藏，等鉴定阶段再揭晓。`);
+  loadNextItem();
   addLog('NPC 已入场。你每次出价后，他们会按心理价决定是否跟价。');
 }
 
