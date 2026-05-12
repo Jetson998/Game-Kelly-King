@@ -462,3 +462,131 @@ button:not(:disabled) {
 .appraisal-result .loss dd {
   color: #fc8181;
 }
+
+/* Step 4.1 UI polish */
+button {
+  transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease, background 0.16s ease;
+}
+
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(247, 189, 75, 0.22);
+}
+
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.status-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.status-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 16px 0;
+  height: 3px;
+  border-radius: 999px 999px 0 0;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.status-card.hot::after {
+  background: linear-gradient(90deg, var(--green), var(--gold));
+}
+
+.auction-panel {
+  position: sticky;
+  top: 16px;
+}
+
+.item-card {
+  border: 1px solid rgba(247, 189, 75, 0.12);
+}
+
+.item-image-placeholder {
+  background:
+    radial-gradient(circle at 30% 25%, rgba(247, 189, 75, 0.2), transparent 32%),
+    rgba(255, 255, 255, 0.04);
+}
+
+.item-tags span.hot-tag,
+.market-chip {
+  color: #122016;
+  background: linear-gradient(135deg, var(--green), #b7f5ce);
+  font-weight: 900;
+}
+
+.item-tags span.risk-tag {
+  color: #fff1e8;
+  background: rgba(239, 125, 69, 0.2);
+}
+
+.item-tags span.price-tag {
+  color: #23180b;
+  background: linear-gradient(135deg, var(--gold), #ffe08a);
+  font-weight: 900;
+}
+
+.bid-box {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.bid-box > div {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.inventory-list li.empty-state {
+  display: block;
+  color: var(--muted);
+  line-height: 1.6;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.inventory-list li.inventory-entry {
+  border: 1px solid rgba(104, 211, 145, 0.14);
+}
+
+.inventory-list li.hot-inventory {
+  background: linear-gradient(135deg, rgba(104, 211, 145, 0.16), rgba(247, 189, 75, 0.08));
+}
+
+.sale-line.profit {
+  color: var(--green);
+}
+
+.sale-line.loss {
+  color: #fc8181;
+}
+
+.sale-line.even {
+  color: var(--text);
+}
+
+.market-chip {
+  width: fit-content;
+  padding: 5px 8px;
+  border-radius: 999px;
+  font-size: 0.76rem;
+}
+
+.log-panel {
+  max-height: 560px;
+  overflow: auto;
+}
+
+.log-list li:last-child {
+  color: var(--text);
+  background: rgba(247, 189, 75, 0.1);
+  border: 1px solid rgba(247, 189, 75, 0.18);
+}
+
+@media (max-width: 1020px) {
+  .bid-box {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .auction-panel {
+    position: static;
+  }
+}

@@ -1,9 +1,9 @@
 const INITIAL_GAME_STATE = {
-  phase: 3,
-  step: '3.3',
-  stepIndex: 3,
+  phase: 4,
+  step: '4.1',
+  stepIndex: 1,
   phaseStepTotal: 3,
-  stepName: '市场热度',
+  stepName: 'UI 优化',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -74,15 +74,17 @@ function renderStepStatus() {
 }
 
 function renderItem(item) {
+  const isHot = item.category === gameState.hotCategory;
   document.querySelector('#itemName').textContent = item.name;
   document.querySelector('#itemMeta').textContent = `品类：${item.category} · 品相：${item.condition} · 稀有度：${item.rarity}`;
   document.querySelector('#itemDescription').textContent = item.description;
   document.querySelector('#itemTags').innerHTML = [
-    `起拍价：${formatCurrency(item.startPrice)}`,
-    `模糊估值：${formatCurrency(item.estimateMin)} - ${formatCurrency(item.estimateMax)}`,
-    `风险：${item.risk}`,
-    ...item.tags,
-  ].map((tag) => `<span>${tag}</span>`).join('');
+    { text: `起拍价：${formatCurrency(item.startPrice)}`, className: 'price-tag' },
+    { text: `模糊估值：${formatCurrency(item.estimateMin)} - ${formatCurrency(item.estimateMax)}` },
+    { text: `风险：${item.risk}`, className: 'risk-tag' },
+    ...(isHot ? [{ text: `今日热点：${item.category}`, className: 'hot-tag' }] : []),
+    ...item.tags.map((tag) => ({ text: tag })),
+  ].map((tag) => `<span class="${tag.className ?? ''}">${tag.text}</span>`).join('');
 }
 
 function getNpcPressureLevel(npc) {
@@ -201,19 +203,46 @@ function getProfitText(entry) {
   return '预计不赚不亏';
 }
 
+function getSaleProfitClass(entry) {
+  const netProfit = entry.salePrice - entry.purchasePrice;
+  if (netProfit > 0) {
+    return 'profit';
+  }
+
+  if (netProfit < 0) {
+    return 'loss';
+  }
+
+  return 'even';
+}
+
+function getSaleProfitText(entry) {
+  const netProfit = entry.salePrice - entry.purchasePrice;
+  if (netProfit > 0) {
+    return `卖出净赚 ${formatCurrency(netProfit)}`;
+  }
+
+  if (netProfit < 0) {
+    return `卖出净亏 ${formatCurrency(Math.abs(netProfit))}`;
+  }
+
+  return '卖出不赚不亏';
+}
+
 function renderInventory() {
   const inventoryList = document.querySelector('#inventoryList');
   if (gameState.inventory.length === 0) {
-    inventoryList.innerHTML = '<li>暂无库存。</li>';
+    inventoryList.innerHTML = '<li class="empty-state">暂无库存。拍下一件东西后，这里会显示鉴定价和出售报价。</li>';
     return;
   }
 
   inventoryList.innerHTML = gameState.inventory.map((entry, index) => `
-    <li>
+    <li class="inventory-entry ${entry.item.category === gameState.hotCategory ? 'hot-inventory' : ''}">
       <div class="inventory-item-info">
         <strong>${entry.item.name}</strong>
         <span>成交价：${formatCurrency(entry.purchasePrice)} · 鉴定价：${formatCurrency(entry.item.realValue)} · ${getProfitText(entry)}</span>
-        <span>快速出售报价：${formatCurrency(entry.salePrice)}</span>
+        <span class="sale-line ${getSaleProfitClass(entry)}">快速出售报价：${formatCurrency(entry.salePrice)} · ${getSaleProfitText(entry)}</span>
+        ${entry.item.category === gameState.hotCategory ? '<span class="market-chip">今日热点加成中</span>' : ''}
       </div>
       <button type="button" class="sell-button" data-sell-index="${index}" ${gameState.gameOver ? 'disabled' : ''}>快速出售</button>
     </li>
@@ -250,6 +279,38 @@ function addLog(text) {
   logList.append(item);
 }
 
+function getNextPlayerBidText() {
+  const amounts = [...document.querySelectorAll('[data-bid-amount]')]
+    .map((button) => Number(button.dataset.bidAmount))
+    .filter((amount) => gameState.currentPrice + amount <= gameState.cash);
+
+  if (gameState.gameOver || gameState.hasPassed || gameState.auctionEnded || gameState.inventory.length >= gameState.inventoryLimit || amounts.length === 0) {
+    return '无法加价';
+  }
+
+  return `+${formatCurrency(Math.min(...amounts)).replace('￥', '￥')}`;
+}
+
+function getAuctionStatusText() {
+  if (gameState.gameOver) {
+    return '挑战结束';
+  }
+
+  if (gameState.auctionEnded) {
+    return '已落槌';
+  }
+
+  if (gameState.hasPassed) {
+    return '已放弃';
+  }
+
+  if (gameState.inventory.length >= gameState.inventoryLimit) {
+    return '库存已满';
+  }
+
+  return '竞价中';
+}
+
 function renderPlayerActions() {
   const inventoryFull = gameState.inventory.length >= gameState.inventoryLimit;
   document.querySelectorAll('[data-bid-amount]').forEach((button) => {
@@ -259,6 +320,8 @@ function renderPlayerActions() {
   });
 
   document.querySelector('#passButton').disabled = gameState.gameOver || gameState.hasPassed || gameState.auctionEnded;
+  document.querySelector('#nextBidText').textContent = getNextPlayerBidText();
+  document.querySelector('#auctionStatusText').textContent = getAuctionStatusText();
 
   const nextItemButton = document.querySelector('#nextItemButton');
   nextItemButton.disabled = gameState.gameOver || !gameState.auctionEnded;
