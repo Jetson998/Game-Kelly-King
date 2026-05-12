@@ -1,11 +1,14 @@
-const gameState = {
+const INITIAL_GAME_STATE = {
   phase: 2,
-  step: '2.1',
-  stepIndex: 1,
+  step: '2.3',
+  stepIndex: 3,
   phaseStepTotal: 3,
-  stepName: '实现鉴定结果',
+  stepName: '实现 7 天挑战',
   day: 1,
   totalDays: 7,
+  lotsPerDay: 5,
+  lotsSeenToday: 0,
+  targetCash: 10000,
   cash: 1000,
   inventory: [],
   inventoryLimit: 3,
@@ -18,7 +21,10 @@ const gameState = {
   hasPassed: false,
   auctionEnded: false,
   settlementDone: false,
+  gameOver: false,
 };
+
+const gameState = { ...INITIAL_GAME_STATE, inventory: [], npcs: [], seenItemIds: [] };
 
 function formatCurrency(value) {
   return `￥${value.toLocaleString('zh-CN')}`;
@@ -33,7 +39,7 @@ function pickRandomItem(items) {
 
 function renderStepStatus() {
   document.querySelector('#stepText').textContent = `阶段 ${gameState.phase} · Step ${gameState.step}（${gameState.stepIndex}/${gameState.phaseStepTotal}）`;
-  document.querySelector('#stepHint').textContent = `当前步骤：阶段 ${gameState.phase} / Step ${gameState.step}（${gameState.stepIndex}/${gameState.phaseStepTotal}）${gameState.stepName}。`;
+  document.querySelector('#stepHint').textContent = `当前步骤：阶段 ${gameState.phase} / Step ${gameState.step}（${gameState.stepIndex}/${gameState.phaseStepTotal}）${gameState.stepName}。目标：7 天结束时现金达到 ${formatCurrency(gameState.targetCash)}。`;
 }
 
 function renderItem(item) {
@@ -61,6 +67,18 @@ function renderNpcs() {
   }).join('');
 }
 
+function getRandomMultiplier(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+function calculateSalePrice(item) {
+  const multiplier = item.category === gameState.hotCategory
+    ? getRandomMultiplier(1.1, 1.35)
+    : getRandomMultiplier(0.85, 1.08);
+
+  return Math.round(item.realValue * multiplier);
+}
+
 function getProfitText(entry) {
   const profit = entry.item.realValue - entry.purchasePrice;
   if (profit > 0) {
@@ -81,10 +99,14 @@ function renderInventory() {
     return;
   }
 
-  inventoryList.innerHTML = gameState.inventory.map((entry) => `
+  inventoryList.innerHTML = gameState.inventory.map((entry, index) => `
     <li>
-      <strong>${entry.item.name}</strong>
-      <span>成交价：${formatCurrency(entry.purchasePrice)} · 鉴定价：${formatCurrency(entry.item.realValue)} · ${getProfitText(entry)}</span>
+      <div class="inventory-item-info">
+        <strong>${entry.item.name}</strong>
+        <span>成交价：${formatCurrency(entry.purchasePrice)} · 鉴定价：${formatCurrency(entry.item.realValue)} · ${getProfitText(entry)}</span>
+        <span>快速出售报价：${formatCurrency(entry.salePrice)}</span>
+      </div>
+      <button type="button" class="sell-button" data-sell-index="${index}" ${gameState.gameOver ? 'disabled' : ''}>快速出售</button>
     </li>
   `).join('');
 }
@@ -124,15 +146,20 @@ function renderPlayerActions() {
   document.querySelectorAll('[data-bid-amount]').forEach((button) => {
     const bidAmount = Number(button.dataset.bidAmount);
     const nextPrice = gameState.currentPrice + bidAmount;
-    button.disabled = gameState.hasPassed || gameState.auctionEnded || inventoryFull || nextPrice > gameState.cash;
+    button.disabled = gameState.gameOver || gameState.hasPassed || gameState.auctionEnded || inventoryFull || nextPrice > gameState.cash;
   });
 
-  document.querySelector('#passButton').disabled = gameState.hasPassed || gameState.auctionEnded;
-  document.querySelector('#nextItemButton').disabled = !gameState.auctionEnded;
+  document.querySelector('#passButton').disabled = gameState.gameOver || gameState.hasPassed || gameState.auctionEnded;
+
+  const nextItemButton = document.querySelector('#nextItemButton');
+  nextItemButton.disabled = gameState.gameOver || !gameState.auctionEnded;
+  nextItemButton.textContent = gameState.day < gameState.totalDays && gameState.lotsSeenToday >= gameState.lotsPerDay
+    ? '下一天'
+    : '下一件';
 }
 
 function renderState() {
-  document.querySelector('#dayText').textContent = `第 ${gameState.day} 天 / 共 ${gameState.totalDays} 天`;
+  document.querySelector('#dayText').textContent = `第 ${gameState.day} 天 / 共 ${gameState.totalDays} 天 · 第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`;
   document.querySelector('#cashText').textContent = formatCurrency(gameState.cash);
   document.querySelector('#inventoryText').textContent = `${gameState.inventory.length} / ${gameState.inventoryLimit}`;
   document.querySelector('#hotCategoryText').textContent = gameState.hotCategory;
@@ -154,26 +181,26 @@ function settleAuction() {
   if (gameState.leader === '你') {
     if (gameState.inventory.length >= gameState.inventoryLimit) {
       addLog('库存已满，无法拿下这件拍品。');
-      return;
+    } else {
+      gameState.cash -= gameState.currentPrice;
+      const inventoryEntry = {
+        item: gameState.currentItem,
+        purchasePrice: gameState.currentPrice,
+        salePrice: calculateSalePrice(gameState.currentItem),
+      };
+      gameState.inventory.push(inventoryEntry);
+      addLog(`成交！你以 ${formatCurrency(gameState.currentPrice)} 拍下「${gameState.currentItem.name}」，物品已进入库存。`);
+      addLog(`鉴定完成：真实价值 ${formatCurrency(gameState.currentItem.realValue)}，${getProfitText(inventoryEntry)}。`);
     }
-
-    gameState.cash -= gameState.currentPrice;
-    const inventoryEntry = {
-      item: gameState.currentItem,
-      purchasePrice: gameState.currentPrice,
-    };
-    gameState.inventory.push(inventoryEntry);
-    addLog(`成交！你以 ${formatCurrency(gameState.currentPrice)} 拍下「${gameState.currentItem.name}」，物品已进入库存。`);
-    addLog(`鉴定完成：真实价值 ${formatCurrency(gameState.currentItem.realValue)}，${getProfitText(inventoryEntry)}。`);
-    return;
-  }
-
-  if (gameState.leader !== '暂无') {
+  } else if (gameState.leader !== '暂无') {
     addLog(`落槌！${gameState.leader} 以 ${formatCurrency(gameState.currentPrice)} 拍走「${gameState.currentItem.name}」。`);
-    return;
+  } else {
+    addLog(`流拍：「${gameState.currentItem.name}」没人拿下。`);
   }
 
-  addLog(`流拍：「${gameState.currentItem.name}」没人拿下。`);
+  if (gameState.day === gameState.totalDays && gameState.lotsSeenToday >= gameState.lotsPerDay) {
+    endGame();
+  }
 }
 
 function maybeEndAuction() {
@@ -184,6 +211,7 @@ function maybeEndAuction() {
 
   gameState.auctionEnded = true;
   settleAuction();
+  renderState();
 }
 
 function runNpcBiddingRound() {
@@ -252,9 +280,55 @@ function passCurrentItem() {
   renderState();
 }
 
+function sellInventoryItem(index) {
+  if (gameState.gameOver) {
+    addLog('挑战已结束，不能继续出售库存。');
+    return;
+  }
+
+  const entry = gameState.inventory[index];
+  if (!entry) {
+    return;
+  }
+
+  gameState.cash += entry.salePrice;
+  gameState.inventory.splice(index, 1);
+
+  const netProfit = entry.salePrice - entry.purchasePrice;
+  const resultText = netProfit >= 0
+    ? `净赚 ${formatCurrency(netProfit)}`
+    : `净亏 ${formatCurrency(Math.abs(netProfit))}`;
+
+  addLog(`快速出售「${entry.item.name}」，收入 ${formatCurrency(entry.salePrice)}，${resultText}。`);
+  renderState();
+}
+
+function advanceDayIfNeeded() {
+  if (gameState.lotsSeenToday < gameState.lotsPerDay) {
+    return;
+  }
+
+  gameState.day += 1;
+  gameState.lotsSeenToday = 0;
+  addLog(`第 ${gameState.day} 天开场，新的摊位开始上货。`);
+}
+
 function loadNextItem() {
+  if (gameState.gameOver) {
+    return;
+  }
+
+  advanceDayIfNeeded();
+
+  if (gameState.day > gameState.totalDays) {
+    endGame();
+    renderState();
+    return;
+  }
+
   gameState.currentItem = pickRandomItem(AUCTION_ITEMS);
   gameState.seenItemIds.push(gameState.currentItem.id);
+  gameState.lotsSeenToday += 1;
   gameState.currentPrice = gameState.currentItem.startPrice;
   gameState.leader = '暂无';
   gameState.npcs = createAuctionNpcs(gameState.currentItem);
@@ -264,7 +338,59 @@ function loadNextItem() {
 
   renderItem(gameState.currentItem);
   renderState();
-  addLog(`下一件拍品上台：「${gameState.currentItem.name}」。`);
+  addLog(`第 ${gameState.day} 天第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件拍品上台：「${gameState.currentItem.name}」。`);
+}
+
+function getInventoryValue() {
+  return gameState.inventory.reduce((total, entry) => total + entry.salePrice, 0);
+}
+
+function endGame() {
+  if (gameState.gameOver) {
+    return;
+  }
+
+  gameState.gameOver = true;
+  gameState.auctionEnded = true;
+
+  const inventoryValue = getInventoryValue();
+  const finalAssets = gameState.cash + inventoryValue;
+  const isWin = gameState.cash >= gameState.targetCash;
+  const resultPanel = document.querySelector('#resultPanel');
+  const resultContent = document.querySelector('#resultContent');
+
+  resultPanel.hidden = false;
+  resultPanel.classList.toggle('win', isWin);
+  resultPanel.classList.toggle('loss', !isWin);
+  resultContent.innerHTML = `
+    <p class="result-title">${isWin ? '挑战成功！你成了捡漏之王。' : '挑战结束，现金目标还差一点。'}</p>
+    <dl>
+      <div><dt>最终现金</dt><dd>${formatCurrency(gameState.cash)}</dd></div>
+      <div><dt>库存快速出售估值</dt><dd>${formatCurrency(inventoryValue)}</dd></div>
+      <div><dt>最终资产</dt><dd>${formatCurrency(finalAssets)}</dd></div>
+      <div><dt>现金目标</dt><dd>${formatCurrency(gameState.targetCash)}</dd></div>
+    </dl>
+  `;
+
+  addLog(`7 天挑战结束：最终现金 ${formatCurrency(gameState.cash)}，最终资产 ${formatCurrency(finalAssets)}。`);
+}
+
+function resetGame() {
+  Object.assign(gameState, {
+    ...INITIAL_GAME_STATE,
+    inventory: [],
+    npcs: [],
+    seenItemIds: [],
+  });
+
+  document.querySelector('#logList').innerHTML = `
+    <li>欢迎来到跳蚤市场，第一件拍品已经上台。</li>
+    <li>当前步骤：阶段 ${gameState.phase} / Step ${gameState.step}（${gameState.stepIndex}/${gameState.phaseStepTotal}）${gameState.stepName}。</li>
+  `;
+  document.querySelector('#resultPanel').hidden = true;
+  renderStepStatus();
+  loadNextItem();
+  addLog('NPC 已入场。你每次出价后，他们会按心理价决定是否跟价。');
 }
 
 function bindPlayerActions() {
@@ -276,6 +402,15 @@ function bindPlayerActions() {
 
   document.querySelector('#passButton').addEventListener('click', passCurrentItem);
   document.querySelector('#nextItemButton').addEventListener('click', loadNextItem);
+  document.querySelector('#restartButton').addEventListener('click', resetGame);
+  document.querySelector('#inventoryList').addEventListener('click', (event) => {
+    const sellButton = event.target.closest('[data-sell-index]');
+    if (!sellButton) {
+      return;
+    }
+
+    sellInventoryItem(Number(sellButton.dataset.sellIndex));
+  });
 }
 
 function initGame() {
