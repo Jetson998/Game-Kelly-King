@@ -1,9 +1,9 @@
 const INITIAL_GAME_STATE = {
   phase: 3,
-  step: '3.1',
-  stepIndex: 1,
+  step: '3.2',
+  stepIndex: 2,
   phaseStepTotal: 3,
-  stepName: 'NPC 性格差异',
+  stepName: 'NPC 心理提示',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -54,6 +54,71 @@ function renderItem(item) {
   ].map((tag) => `<span>${tag}</span>`).join('');
 }
 
+function getNpcPressureLevel(npc) {
+  if (!npc.active) {
+    return '已离场';
+  }
+
+  const ratio = gameState.currentPrice / Math.max(npc.maxBid, 1);
+  if (ratio >= 0.9) {
+    return '快到极限';
+  }
+
+  if (ratio >= 0.7) {
+    return '开始犹豫';
+  }
+
+  if (ratio >= 0.45) {
+    return '仍有兴趣';
+  }
+
+  return '空间很大';
+}
+
+function getNpcMindHint(npc) {
+  const item = gameState.currentItem;
+  if (!item) {
+    return npc.tell;
+  }
+
+  const likesCategory = npc.favoriteCategories?.includes(item.category);
+  const avoidsCategory = npc.avoidCategories?.includes(item.category);
+  const pressure = getNpcPressureLevel(npc);
+
+  if (!npc.active) {
+    return `${pressure}：${npc.name}已经退场，他的退出理由比心理价更值得看。`;
+  }
+
+  if (npc.id === 'rookie') {
+    if (likesCategory || item.rarity === 'rare' || item.rarity === 'epic') {
+      return `${pressure}：他明显心动，可能会冲动跳价；别被他的热情带偏。`;
+    }
+    if (avoidsCategory) {
+      return `${pressure}：他对这类货没那么懂，跟价参考价值偏低。`;
+    }
+    return `${pressure}：他更多靠感觉出价，价格越热闹越容易失控。`;
+  }
+
+  if (npc.id === 'dealer') {
+    if (likesCategory || item.category === gameState.hotCategory) {
+      return `${pressure}：他还在算转卖空间；他持续跟价通常说明这件货不差。`;
+    }
+    if (avoidsCategory) {
+      return `${pressure}：他不爱碰这类风险货，早退不一定代表东西差。`;
+    }
+    return `${pressure}：他只看利润，撤退时多半是价格已经不香。`;
+  }
+
+  if (npc.id === 'shill') {
+    if (likesCategory) {
+      return `${pressure}：他在这种题材上最会带节奏，可能是在诱你多加一口。`;
+    }
+    return `${pressure}：他未必真想买，重点是观察他什么时候突然收手。`;
+  }
+
+  return `${pressure}：${npc.tell}`;
+}
+
 function renderNpcs() {
   const npcList = document.querySelector('.npc-list');
   npcList.innerHTML = gameState.npcs.map((npc) => {
@@ -64,7 +129,7 @@ function renderNpcs() {
         <strong>${npc.name}</strong>
         <span>${npc.archetype} · ${npc.mood} · ${status}</span>
         <small>${categoryText}</small>
-        <small>${npc.tell}</small>
+        <small class="npc-mind-hint">心理提示：${getNpcMindHint(npc)}</small>
       </li>
     `;
   }).join('');
