@@ -12,6 +12,7 @@ const AUCTION_NPCS = [
     avoidCategories: ['古董'],
     favoriteBoost: 1.12,
     avoidPenalty: 0.82,
+    hotCategoryBoost: 1.12,
     jumpBidChance: 0.36,
     overbidChance: 0.22,
     moods: ['兴奋搓手', '眼神飘忽', '明显心动', '强装镇定'],
@@ -29,6 +30,7 @@ const AUCTION_NPCS = [
     avoidCategories: ['神秘货', '古董'],
     favoriteBoost: 1.08,
     avoidPenalty: 0.72,
+    hotCategoryBoost: 1.16,
     moods: ['低头算账', '盯着成色', '翻平台成交价', '面无表情'],
   },
   {
@@ -44,6 +46,7 @@ const AUCTION_NPCS = [
     avoidCategories: [],
     favoriteBoost: 1.1,
     avoidPenalty: 1,
+    hotCategoryBoost: 1.2,
     pressureRatio: 0.78,
     minBluffBids: 1,
     jumpBidChance: 0.45,

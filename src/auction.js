@@ -10,16 +10,22 @@ function pickOne(options) {
   return options[Math.floor(Math.random() * options.length)];
 }
 
-function getCategoryAffinity(npc, item) {
+function getCategoryAffinity(npc, item, hotCategory) {
+  let affinity = 1;
+
   if (npc.favoriteCategories?.includes(item.category)) {
-    return npc.favoriteBoost;
+    affinity *= npc.favoriteBoost;
   }
 
   if (npc.avoidCategories?.includes(item.category)) {
-    return npc.avoidPenalty;
+    affinity *= npc.avoidPenalty;
   }
 
-  return 1;
+  if (item.category === hotCategory) {
+    affinity *= npc.hotCategoryBoost ?? 1.08;
+  }
+
+  return affinity;
 }
 
 function getRarityExcitement(npc, item) {
@@ -38,11 +44,11 @@ function getRarityExcitement(npc, item) {
   return 1;
 }
 
-function createAuctionNpcs(item) {
+function createAuctionNpcs(item, hotCategory) {
   return AUCTION_NPCS.map((npc) => {
     const estimateNoise = randomBetween(1 - npc.errorRate, 1 + npc.errorRate);
     const aggression = randomBetween(npc.aggressionMin, npc.aggressionMax);
-    const categoryAffinity = getCategoryAffinity(npc, item);
+    const categoryAffinity = getCategoryAffinity(npc, item, hotCategory);
     const rarityExcitement = getRarityExcitement(npc, item);
     const maxBid = roundToBidStep(item.realValue * estimateNoise * aggression * categoryAffinity * rarityExcitement);
 
@@ -102,7 +108,7 @@ function getRookieDecision(npc, currentPrice, context) {
 function getDealerDecision(npc, currentPrice, context) {
   const increment = getNextBidIncrement(currentPrice);
   const nextPrice = currentPrice + increment;
-  const targetMargin = context.item.category === context.hotCategory ? 0.82 : 0.72;
+  const targetMargin = context.item.category === context.hotCategory ? 0.9 : 0.72;
   const resaleCeiling = roundToBidStep(context.item.realValue * targetMargin);
   const hardCeiling = Math.min(npc.maxBid, resaleCeiling);
 

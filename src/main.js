@@ -1,9 +1,9 @@
 const INITIAL_GAME_STATE = {
   phase: 3,
-  step: '3.2',
-  stepIndex: 2,
+  step: '3.3',
+  stepIndex: 3,
   phaseStepTotal: 3,
-  stepName: 'NPC 心理提示',
+  stepName: '市场热度',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -13,6 +13,7 @@ const INITIAL_GAME_STATE = {
   inventory: [],
   inventoryLimit: 3,
   hotCategory: '相机',
+  lastHotCategory: null,
   currentPrice: 0,
   leader: '暂无',
   currentItem: null,
@@ -30,11 +31,41 @@ function formatCurrency(value) {
   return `￥${value.toLocaleString('zh-CN')}`;
 }
 
+function pickOne(options) {
+  return options[Math.floor(Math.random() * options.length)];
+}
+
 function pickRandomItem(items) {
   const availableItems = items.filter((item) => !gameState.seenItemIds.includes(item.id));
   const pool = availableItems.length > 0 ? availableItems : items;
-  const index = Math.floor(Math.random() * pool.length);
-  return pool[index];
+  const hotPool = pool.filter((item) => item.category === gameState.hotCategory);
+  const finalPool = hotPool.length > 0 && Math.random() < 0.35 ? hotPool : pool;
+  return pickOne(finalPool);
+}
+
+function getMarketCategories() {
+  return [...new Set(AUCTION_ITEMS.map((item) => item.category))];
+}
+
+function pickDailyHotCategory() {
+  const categories = getMarketCategories().filter((category) => category !== gameState.lastHotCategory);
+  return pickOne(categories.length > 0 ? categories : getMarketCategories());
+}
+
+function getMarketReport(category) {
+  const reports = {
+    '电子产品': '旧设备回收商今天进场，能开机的电子货更容易卖掉。',
+    '相机': '摄影圈突然来人扫货，镜头和胶片机报价被抬高。',
+    '手表': '礼品回收摊缺货，表类今天有人愿意加价收。',
+    '球鞋': '潮流买家扎堆，热门尺码的鞋会被多看两眼。',
+    '手办': '收藏群里有人补款，绝版和热门角色更吃香。',
+    '收藏品': '老物件摊位人气高，纪念币和怀旧玩具流动性变好。',
+    '唱片': '黑胶/CD 玩家今天很活跃，有故事的唱片更容易成交。',
+    '古董': '古玩客多了，但坑也更多，价格波动会被放大。',
+    '神秘货': '赌箱氛围起来了，大家对未知纸箱格外上头。',
+  };
+
+  return reports[category] ?? `${category} 今天更受关注，报价和竞价都会更激进。`;
 }
 
 function renderStepStatus() {
@@ -141,10 +172,20 @@ function getRandomMultiplier(min, max) {
 
 function calculateSalePrice(item) {
   const multiplier = item.category === gameState.hotCategory
-    ? getRandomMultiplier(1.1, 1.35)
-    : getRandomMultiplier(0.85, 1.08);
+    ? getRandomMultiplier(1.18, 1.42)
+    : getRandomMultiplier(0.82, 1.05);
 
   return Math.round(item.realValue * multiplier);
+}
+
+function rerollInventorySalePrices(reason = '市场热度变化') {
+  gameState.inventory.forEach((entry) => {
+    entry.salePrice = calculateSalePrice(entry.item);
+  });
+
+  if (gameState.inventory.length > 0) {
+    addLog(`${reason}，库存的快速出售报价已重新刷新。`);
+  }
 }
 
 function getProfitText(entry) {
@@ -230,7 +271,7 @@ function renderState() {
   document.querySelector('#dayText').textContent = `第 ${gameState.day} 天 / 共 ${gameState.totalDays} 天 · 第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`;
   document.querySelector('#cashText').textContent = formatCurrency(gameState.cash);
   document.querySelector('#inventoryText').textContent = `${gameState.inventory.length} / ${gameState.inventoryLimit}`;
-  document.querySelector('#hotCategoryText').textContent = gameState.hotCategory;
+  document.querySelector('#hotCategoryText').textContent = `${gameState.hotCategory} ↑`;
   document.querySelector('#currentPriceText').textContent = formatCurrency(gameState.currentPrice);
   document.querySelector('#leaderText').textContent = gameState.leader;
   renderNpcs();
@@ -376,6 +417,20 @@ function sellInventoryItem(index) {
   renderState();
 }
 
+function startNewMarketDay(isFirstDay = false) {
+  gameState.lastHotCategory = gameState.hotCategory;
+  gameState.hotCategory = pickDailyHotCategory();
+
+  if (isFirstDay) {
+    addLog(`今日市场热点：${gameState.hotCategory}。${getMarketReport(gameState.hotCategory)}`);
+    return;
+  }
+
+  addLog(`第 ${gameState.day} 天开场，新的摊位开始上货。`);
+  addLog(`今日市场热点切换为：${gameState.hotCategory}。${getMarketReport(gameState.hotCategory)}`);
+  rerollInventorySalePrices('新一天行情变动');
+}
+
 function advanceDayIfNeeded() {
   if (gameState.lotsSeenToday < gameState.lotsPerDay) {
     return;
@@ -383,7 +438,7 @@ function advanceDayIfNeeded() {
 
   gameState.day += 1;
   gameState.lotsSeenToday = 0;
-  addLog(`第 ${gameState.day} 天开场，新的摊位开始上货。`);
+  startNewMarketDay(false);
 }
 
 function loadNextItem() {
@@ -404,7 +459,7 @@ function loadNextItem() {
   gameState.lotsSeenToday += 1;
   gameState.currentPrice = gameState.currentItem.startPrice;
   gameState.leader = '暂无';
-  gameState.npcs = createAuctionNpcs(gameState.currentItem);
+  gameState.npcs = createAuctionNpcs(gameState.currentItem, gameState.hotCategory);
   gameState.hasPassed = false;
   gameState.auctionEnded = false;
   gameState.settlementDone = false;
@@ -462,6 +517,7 @@ function resetGame() {
   `;
   document.querySelector('#resultPanel').hidden = true;
   renderStepStatus();
+  startNewMarketDay(true);
   loadNextItem();
   addLog('NPC 已入场。你每次出价后，他们会按心理价决定是否跟价。');
 }
@@ -493,6 +549,7 @@ function initGame() {
 
   renderStepStatus();
   bindPlayerActions();
+  startNewMarketDay(true);
   loadNextItem();
   addLog('NPC 已入场。你每次出价后，他们会按心理价决定是否跟价。');
 }
