@@ -1,9 +1,9 @@
 const gameState = {
   phase: 1,
-  step: '1.3',
-  stepIndex: 3,
+  step: '1.4',
+  stepIndex: 4,
   phaseStepTotal: 5,
-  stepName: '实现玩家出价',
+  stepName: '实现简单 NPC 出价',
   day: 1,
   totalDays: 7,
   cash: 1000,
@@ -13,7 +13,9 @@ const gameState = {
   currentPrice: 0,
   leader: '暂无',
   currentItem: null,
+  npcs: [],
   hasPassed: false,
+  auctionEnded: false,
 };
 
 function formatCurrency(value) {
@@ -42,6 +44,19 @@ function renderItem(item) {
   ].map((tag) => `<span>${tag}</span>`).join('');
 }
 
+function renderNpcs() {
+  const npcList = document.querySelector('.npc-list');
+  npcList.innerHTML = gameState.npcs.map((npc) => {
+    const status = npc.active ? `心理价：${formatCurrency(npc.maxBid)}` : '已退出';
+    return `
+      <li>
+        <strong>${npc.name}</strong>
+        <span>${npc.style} · ${status}</span>
+      </li>
+    `;
+  }).join('');
+}
+
 function addLog(text) {
   const logList = document.querySelector('#logList');
   const item = document.createElement('li');
@@ -53,10 +68,10 @@ function renderPlayerActions() {
   document.querySelectorAll('[data-bid-amount]').forEach((button) => {
     const bidAmount = Number(button.dataset.bidAmount);
     const nextPrice = gameState.currentPrice + bidAmount;
-    button.disabled = gameState.hasPassed || nextPrice > gameState.cash;
+    button.disabled = gameState.hasPassed || gameState.auctionEnded || nextPrice > gameState.cash;
   });
 
-  document.querySelector('#passButton').disabled = gameState.hasPassed;
+  document.querySelector('#passButton').disabled = gameState.hasPassed || gameState.auctionEnded;
 }
 
 function renderState() {
@@ -66,12 +81,62 @@ function renderState() {
   document.querySelector('#hotCategoryText').textContent = gameState.hotCategory;
   document.querySelector('#currentPriceText').textContent = formatCurrency(gameState.currentPrice);
   document.querySelector('#leaderText').textContent = gameState.leader;
+  renderNpcs();
   renderPlayerActions();
+}
+
+function maybeEndAuction() {
+  const activeNpcs = gameState.npcs.filter((npc) => npc.active);
+  if (activeNpcs.length > 0) {
+    return;
+  }
+
+  gameState.auctionEnded = true;
+  if (gameState.leader === '你') {
+    addLog(`本轮竞价暂时由你领先：${formatCurrency(gameState.currentPrice)}。成交和入库将在 Step 1.5 实现。`);
+  } else if (gameState.leader !== '暂无') {
+    addLog(`${gameState.leader} 暂时拿下这件拍品。成交流程将在 Step 1.5 实现。`);
+  } else {
+    addLog('所有人都放弃了这件拍品。');
+  }
+}
+
+function runNpcBiddingRound() {
+  if (gameState.auctionEnded) {
+    return;
+  }
+
+  const activeNpcs = gameState.npcs.filter((npc) => npc.active);
+  if (activeNpcs.length === 0) {
+    maybeEndAuction();
+    return;
+  }
+
+  for (const npc of activeNpcs) {
+    const decision = getNpcBidDecision(npc, gameState.currentPrice);
+
+    if (!decision.shouldBid) {
+      addLog(`${npc.name}：${decision.reason}。`);
+      continue;
+    }
+
+    gameState.currentPrice = decision.nextPrice;
+    gameState.leader = npc.name;
+    addLog(`${npc.name} 加价到 ${formatCurrency(gameState.currentPrice)}。`);
+  }
+
+  maybeEndAuction();
+  renderState();
 }
 
 function placePlayerBid(increment) {
   if (gameState.hasPassed) {
     addLog('你已经放弃这件拍品，不能继续出价。');
+    return;
+  }
+
+  if (gameState.auctionEnded) {
+    addLog('这件拍品的竞价已经结束。');
     return;
   }
 
@@ -86,12 +151,13 @@ function placePlayerBid(increment) {
   gameState.leader = '你';
   addLog(`你加价 ${formatCurrency(increment)}，当前价格变为 ${formatCurrency(gameState.currentPrice)}。`);
   renderState();
+  runNpcBiddingRound();
 }
 
 function passCurrentItem() {
   gameState.hasPassed = true;
-  gameState.leader = '暂无';
-  addLog(`你放弃了「${gameState.currentItem.name}」。下一步会加入 NPC 出价与成交流程。`);
+  addLog(`你放弃了「${gameState.currentItem.name}」，NPC 继续决定是否出价。`);
+  runNpcBiddingRound();
   renderState();
 }
 
@@ -112,13 +178,14 @@ function initGame() {
 
   gameState.currentItem = pickRandomItem(AUCTION_ITEMS);
   gameState.currentPrice = gameState.currentItem.startPrice;
+  gameState.npcs = createAuctionNpcs(gameState.currentItem);
 
   renderStepStatus();
   renderItem(gameState.currentItem);
   bindPlayerActions();
   renderState();
   addLog(`随机抽到拍品：${gameState.currentItem.name}。真实价值已隐藏，等鉴定阶段再揭晓。`);
-  addLog('你现在可以加价或放弃；本步骤暂不加入 NPC 竞价。');
+  addLog('NPC 已入场。你每次出价后，他们会按心理价决定是否跟价。');
 }
 
 initGame();
