@@ -256,6 +256,22 @@ h3 {
   background: rgba(255, 255, 255, 0.06);
 }
 
+.npc-list li.active {
+  border: 1px solid rgba(247, 189, 75, 0.22);
+}
+
+.npc-list li.inactive {
+  opacity: 0.58;
+}
+
+.npc-list small {
+  display: block;
+  margin-top: 6px;
+  color: rgba(168, 173, 186, 0.82);
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
 .npc-list strong {
   display: block;
   margin-bottom: 6px;

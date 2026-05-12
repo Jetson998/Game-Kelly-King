@@ -1,9 +1,9 @@
 const INITIAL_GAME_STATE = {
-  phase: 2,
-  step: '2.3',
-  stepIndex: 3,
+  phase: 3,
+  step: '3.1',
+  stepIndex: 1,
   phaseStepTotal: 3,
-  stepName: '实现 7 天挑战',
+  stepName: 'NPC 性格差异',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -58,10 +58,13 @@ function renderNpcs() {
   const npcList = document.querySelector('.npc-list');
   npcList.innerHTML = gameState.npcs.map((npc) => {
     const status = npc.active ? `心理价：${formatCurrency(npc.maxBid)}` : '已退出';
+    const categoryText = npc.favoriteCategories?.length ? `偏好：${npc.favoriteCategories.join('、')}` : '偏好：无';
     return `
-      <li>
+      <li class="npc-card ${npc.active ? 'active' : 'inactive'}">
         <strong>${npc.name}</strong>
-        <span>${npc.style} · ${status}</span>
+        <span>${npc.archetype} · ${npc.mood} · ${status}</span>
+        <small>${categoryText}</small>
+        <small>${npc.tell}</small>
       </li>
     `;
   }).join('');
@@ -226,7 +229,12 @@ function runNpcBiddingRound() {
   }
 
   for (const npc of activeNpcs) {
-    const decision = getNpcBidDecision(npc, gameState.currentPrice);
+    const decision = getNpcBidDecision(npc, gameState.currentPrice, {
+      item: gameState.currentItem,
+      hotCategory: gameState.hotCategory,
+      leader: gameState.leader,
+      cash: gameState.cash,
+    });
 
     if (!decision.shouldBid) {
       addLog(`${npc.name}：${decision.reason}。`);
@@ -235,7 +243,7 @@ function runNpcBiddingRound() {
 
     gameState.currentPrice = decision.nextPrice;
     gameState.leader = npc.name;
-    addLog(`${npc.name} 加价到 ${formatCurrency(gameState.currentPrice)}。`);
+    addLog(`${npc.name} ${decision.reason}，加价到 ${formatCurrency(gameState.currentPrice)}。`);
   }
 
   maybeEndAuction();
