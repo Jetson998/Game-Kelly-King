@@ -11,7 +11,7 @@
     <header class="hero">
       <p class="eyebrow">Auction Mini Game</p>
       <h1>捡漏之王</h1>
-      <p class="subtitle">从华强北到澳门高端局，拿现金、拼眼力，在大湾区流动拍场里搏一次翻身。</p>
+      <p class="subtitle">看估值、压价格、别上头。7 天内把现金做到 ￥6,500。</p>
     </header>
 
     <section class="status-bar" aria-label="玩家状态">
@@ -40,11 +40,11 @@
             <p class="eyebrow">Current Lot</p>
             <h2>今日拍品</h2>
           </div>
-          <span id="stepText" class="lot-index">阶段 5 · Step 5.1（1/2）</span>
+          <span id="stepText" class="lot-index">第 1 件</span>
         </div>
 
         <div class="item-card">
-          <div class="item-image-placeholder">?</div>
+          <div class="item-image-placeholder" aria-hidden="true">?</div>
           <div class="item-info">
             <h3 id="itemName">老式胶片相机</h3>
             <p id="itemMeta">品类：相机 · 品相：七成新</p>
@@ -83,7 +83,7 @@
           <button type="button" id="passButton" class="ghost">放弃</button>
           <button type="button" id="nextItemButton" class="ghost" disabled>下一件</button>
         </div>
-        <p id="stepHint" class="hint">当前步骤：阶段 5 / Step 5.1（1/2）浏览器试玩与问题修复。</p>
+        <p id="stepHint" class="hint">提示：出价不要超过你愿意承担的风险；放弃不扣钱。</p>
         <div class="auction-footer-row">
           <p class="save-status" aria-live="polite">存档状态：<span id="saveStatusText">尚未保存</span></p>
           <button type="button" class="ghost restart-mini-button" data-restart-game>重新开始</button>
@@ -95,7 +95,7 @@
           <div class="section-title-row">
             <div>
               <p class="eyebrow">Rivals</p>
-              <h2>竞拍对手</h2>
+              <h2>对手动向</h2>
             </div>
           </div>
           <ul class="npc-list">
@@ -152,13 +152,13 @@
         <section class="log-panel">
           <div class="section-title-row">
             <div>
-              <p class="eyebrow">Auction Log</p>
-              <h2>拍卖日志</h2>
+              <p class="eyebrow">Log</p>
+              <h2>最近动态</h2>
             </div>
           </div>
           <ol id="logList" class="log-list" aria-live="polite">
             <li>欢迎来到大湾区流动拍场，第一件货已经上台。</li>
-            <li>当前步骤：阶段 5 / Step 5.1（1/2）浏览器试玩与问题修复。</li>
+            <li>第一件货已经上台。看估值和风险，决定要不要加价。</li>
           </ol>
         </section>
       </aside>

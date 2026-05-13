@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v1';
+const STORAGE_KEY = 'kelly-king-save-v2';
 const MAX_LOG_ENTRIES = 80;
 
 const BALANCE_CONFIG = {
@@ -16,10 +16,10 @@ const BALANCE_CONFIG = {
 
 const INITIAL_GAME_STATE = {
   phase: 5,
-  step: '5.1',
-  stepIndex: 1,
-  phaseStepTotal: 2,
-  stepName: '浏览器试玩与问题修复',
+  step: '5.2',
+  stepIndex: 2,
+  phaseStepTotal: 3,
+  stepName: '页面体验与移动端适配',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -41,8 +41,7 @@ const INITIAL_GAME_STATE = {
   gameOver: false,
   saveStatus: '尚未保存',
   logs: [
-    '欢迎来到大湾区流动拍场，第一件货已经上台。',
-    '当前步骤：阶段 5 / Step 5.1（1/2）浏览器试玩与问题修复。',
+    '第一件货已经上台。看估值和风险，决定要不要加价。',
   ],
 };
 
@@ -107,8 +106,8 @@ function getMarketReport(category) {
 }
 
 function renderStepStatus() {
-  document.querySelector('#stepText').textContent = `阶段 ${gameState.phase} · Step ${gameState.step}（${gameState.stepIndex}/${gameState.phaseStepTotal}）`;
-  document.querySelector('#stepHint').textContent = `当前步骤：阶段 ${gameState.phase} / Step ${gameState.step}（${gameState.stepIndex}/${gameState.phaseStepTotal}）${gameState.stepName}。目标：7 天结束时现金达到 ${formatCurrency(gameState.targetCash)}。`;
+  document.querySelector('#stepText').textContent = `第 ${gameState.lotsSeenToday || 1}/${gameState.lotsPerDay} 件`;
+  document.querySelector('#stepHint').textContent = `提示：现金目标 ${formatCurrency(gameState.targetCash)}；放弃不扣钱，拍下后会显示真实价值。`;
 }
 
 function renderItem(item) {
@@ -193,14 +192,14 @@ function getNpcMindHint(npc) {
 function renderNpcs() {
   const npcList = document.querySelector('.npc-list');
   npcList.innerHTML = gameState.npcs.map((npc) => {
-    const status = npc.active ? `心理价：${formatCurrency(npc.maxBid)}` : '已退出';
-    const categoryText = npc.favoriteCategories?.length ? `偏好：${npc.favoriteCategories.join('、')}` : '偏好：无';
+    const pressure = getNpcPressureLevel(npc);
+    const status = npc.active ? pressure : '已退出';
+    const hint = getNpcMindHint(npc).replace(`${pressure}：`, '').replace('已离场：', '');
     return `
       <li class="npc-card ${npc.active ? 'active' : 'inactive'}">
         <strong>${npc.name}</strong>
-        <span>${npc.archetype} · ${npc.mood} · ${status}</span>
-        <small>${categoryText}</small>
-        <small class="npc-mind-hint">心理提示：${getNpcMindHint(npc)}</small>
+        <span>${status}</span>
+        <small class="npc-mind-hint">${hint}</small>
       </li>
     `;
   }).join('');
@@ -482,7 +481,8 @@ function renderPlayerActions() {
 }
 
 function renderState() {
-  document.querySelector('#dayText').textContent = `第 ${gameState.day} 天 / 共 ${gameState.totalDays} 天 · 第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`;
+  document.querySelector('#dayText').textContent = `第 ${gameState.day}/${gameState.totalDays} 天 · 第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`;
+  document.querySelector('#stepText').textContent = `第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`;
   document.querySelector('#cashText').textContent = formatCurrency(gameState.cash);
   document.querySelector('#inventoryText').textContent = `${gameState.inventory.length} / ${gameState.inventoryLimit}`;
   document.querySelector('#hotCategoryText').textContent = `${gameState.hotCategory} ↑`;
@@ -529,7 +529,12 @@ function settleAuction() {
 
 function maybeEndAuction() {
   const activeNpcs = gameState.npcs.filter((npc) => npc.active);
-  if (activeNpcs.length > 0) {
+  const npcCanOutbidPlayer = activeNpcs.some((npc) => gameState.leader === '你' && gameState.currentPrice + 50 <= npc.maxBid);
+  if (activeNpcs.length > 0 && !gameState.hasPassed && gameState.leader !== '你') {
+    return;
+  }
+
+  if (activeNpcs.length > 0 && npcCanOutbidPlayer) {
     return;
   }
 
@@ -604,8 +609,14 @@ function placePlayerBid(increment) {
 
 function passCurrentItem() {
   gameState.hasPassed = true;
-  addLog(`你放弃了「${gameState.currentItem.name}」，NPC 继续决定是否出价。`);
+  addLog(`你放弃了「${gameState.currentItem.name}」。`);
   runNpcBiddingRound();
+
+  if (!gameState.auctionEnded) {
+    gameState.auctionEnded = true;
+    settleAuction();
+  }
+
   renderState();
 }
 
@@ -681,7 +692,7 @@ function loadNextItem() {
 
   renderItem(gameState.currentItem);
   renderState();
-  addLog(`第 ${gameState.day} 天第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件拍品上台：「${gameState.currentItem.name}」。`);
+  addLog(`第 ${gameState.day} 天第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件：「${gameState.currentItem.name}」上台。`);
 }
 
 function getInventoryValue() {
@@ -735,7 +746,7 @@ function resetGame() {
   renderLogs();
   startNewMarketDay(true);
   loadNextItem();
-  addLog('阿杰、老周和马哥已入场。你每次出价后，他们会按心理价决定是否跟价。');
+  addLog('对手已入场。加价后，他们会决定是否跟。');
 }
 
 function bindPlayerActions() {
@@ -775,14 +786,14 @@ function initGame() {
     if (gameState.gameOver) {
       endGame();
     }
-    addLog('已从本地存档恢复进度。', { skipSave: true });
+    addLog('已恢复本地进度。', { skipSave: true });
     return;
   }
 
   renderLogs();
   startNewMarketDay(true);
   loadNextItem();
-  addLog('阿杰、老周和马哥已入场。你每次出价后，他们会按心理价决定是否跟价。');
+  addLog('对手已入场。加价后，他们会决定是否跟。');
 }
 
 initGame();
