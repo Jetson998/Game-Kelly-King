@@ -231,10 +231,26 @@ h3 {
   grid-template-columns: repeat(5, 1fr);
 }
 
-.hint {
+.hint,
+.save-status {
   margin: 14px 0 0;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.save-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 1px solid rgba(104, 211, 145, 0.22);
+  border-radius: 999px;
+  background: rgba(104, 211, 145, 0.08);
+}
+
+.save-status span {
+  color: var(--green);
+  font-weight: 800;
 }
 
 .npc-list,

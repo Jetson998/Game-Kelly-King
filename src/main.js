@@ -1,17 +1,33 @@
+const STORAGE_KEY = 'kelly-king-save-v1';
+const MAX_LOG_ENTRIES = 80;
+
+const BALANCE_CONFIG = {
+  startingCash: 1200,
+  targetCash: 6500,
+  inventoryLimit: 4,
+  hotSaleMultiplier: { min: 1.12, max: 1.34 },
+  normalSaleMultiplier: { min: 0.88, max: 1.1 },
+  dayValueRanges: [
+    { maxDay: 2, minValue: 0, maxValue: 1000 },
+    { maxDay: 5, minValue: 300, maxValue: 1800 },
+    { maxDay: 7, minValue: 650, maxValue: Infinity },
+  ],
+};
+
 const INITIAL_GAME_STATE = {
   phase: 4,
-  step: '4.1',
-  stepIndex: 1,
+  step: '4.3',
+  stepIndex: 3,
   phaseStepTotal: 3,
-  stepName: 'UI 优化',
+  stepName: 'localStorage 存档',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
   lotsSeenToday: 0,
-  targetCash: 10000,
-  cash: 1000,
+  targetCash: BALANCE_CONFIG.targetCash,
+  cash: BALANCE_CONFIG.startingCash,
   inventory: [],
-  inventoryLimit: 3,
+  inventoryLimit: BALANCE_CONFIG.inventoryLimit,
   hotCategory: '相机',
   lastHotCategory: null,
   currentPrice: 0,
@@ -23,9 +39,24 @@ const INITIAL_GAME_STATE = {
   auctionEnded: false,
   settlementDone: false,
   gameOver: false,
+  saveStatus: '尚未保存',
+  logs: [
+    '欢迎来到跳蚤市场，第一件拍品已经上台。',
+    '当前步骤：阶段 4 / Step 4.3（3/3）localStorage 存档。',
+  ],
 };
 
-const gameState = { ...INITIAL_GAME_STATE, inventory: [], npcs: [], seenItemIds: [] };
+function createInitialGameState() {
+  return {
+    ...INITIAL_GAME_STATE,
+    inventory: [],
+    npcs: [],
+    seenItemIds: [],
+    logs: [...INITIAL_GAME_STATE.logs],
+  };
+}
+
+const gameState = createInitialGameState();
 
 function formatCurrency(value) {
   return `￥${value.toLocaleString('zh-CN')}`;
@@ -35,9 +66,20 @@ function pickOne(options) {
   return options[Math.floor(Math.random() * options.length)];
 }
 
+function getDayValueRange(day) {
+  return BALANCE_CONFIG.dayValueRanges.find((range) => day <= range.maxDay) ?? BALANCE_CONFIG.dayValueRanges.at(-1);
+}
+
+function filterItemsForCurrentDay(items) {
+  const range = getDayValueRange(gameState.day);
+  const tierItems = items.filter((item) => item.realValue >= range.minValue && item.realValue <= range.maxValue);
+  return tierItems.length > 0 ? tierItems : items;
+}
+
 function pickRandomItem(items) {
-  const availableItems = items.filter((item) => !gameState.seenItemIds.includes(item.id));
-  const pool = availableItems.length > 0 ? availableItems : items;
+  const dayPool = filterItemsForCurrentDay(items);
+  const availableItems = dayPool.filter((item) => !gameState.seenItemIds.includes(item.id));
+  const pool = availableItems.length > 0 ? availableItems : dayPool;
   const hotPool = pool.filter((item) => item.category === gameState.hotCategory);
   const finalPool = hotPool.length > 0 && Math.random() < 0.35 ? hotPool : pool;
   return pickOne(finalPool);
@@ -173,9 +215,10 @@ function getRandomMultiplier(min, max) {
 }
 
 function calculateSalePrice(item) {
-  const multiplier = item.category === gameState.hotCategory
-    ? getRandomMultiplier(1.18, 1.42)
-    : getRandomMultiplier(0.82, 1.05);
+  const saleRange = item.category === gameState.hotCategory
+    ? BALANCE_CONFIG.hotSaleMultiplier
+    : BALANCE_CONFIG.normalSaleMultiplier;
+  const multiplier = getRandomMultiplier(saleRange.min, saleRange.max);
 
   return Math.round(item.realValue * multiplier);
 }
@@ -272,11 +315,106 @@ function renderAppraisal() {
   `;
 }
 
-function addLog(text) {
+function addLog(text, options = {}) {
+  const { skipSave = false } = options;
+  gameState.logs.push(text);
+  if (gameState.logs.length > MAX_LOG_ENTRIES) {
+    gameState.logs = gameState.logs.slice(-MAX_LOG_ENTRIES);
+  }
+
+  renderLogs();
+
+  if (!skipSave) {
+    saveGame();
+  }
+}
+
+function renderLogs() {
   const logList = document.querySelector('#logList');
-  const item = document.createElement('li');
-  item.textContent = text;
-  logList.append(item);
+  logList.innerHTML = gameState.logs.map((text) => `<li>${text}</li>`).join('');
+}
+
+function updateSaveStatus(text) {
+  gameState.saveStatus = text;
+  const saveStatusText = document.querySelector('#saveStatusText');
+  if (saveStatusText) {
+    saveStatusText.textContent = text;
+  }
+}
+
+function getSerializableGameState() {
+  return {
+    phase: gameState.phase,
+    step: gameState.step,
+    stepIndex: gameState.stepIndex,
+    phaseStepTotal: gameState.phaseStepTotal,
+    stepName: gameState.stepName,
+    day: gameState.day,
+    totalDays: gameState.totalDays,
+    lotsPerDay: gameState.lotsPerDay,
+    lotsSeenToday: gameState.lotsSeenToday,
+    targetCash: gameState.targetCash,
+    cash: gameState.cash,
+    inventory: gameState.inventory,
+    inventoryLimit: gameState.inventoryLimit,
+    hotCategory: gameState.hotCategory,
+    lastHotCategory: gameState.lastHotCategory,
+    currentPrice: gameState.currentPrice,
+    leader: gameState.leader,
+    currentItem: gameState.currentItem,
+    npcs: gameState.npcs,
+    seenItemIds: gameState.seenItemIds,
+    hasPassed: gameState.hasPassed,
+    auctionEnded: gameState.auctionEnded,
+    settlementDone: gameState.settlementDone,
+    gameOver: gameState.gameOver,
+    logs: gameState.logs,
+  };
+}
+
+function saveGame() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(getSerializableGameState()));
+    updateSaveStatus(`已自动保存 · 第 ${gameState.day} 天第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`);
+  } catch (error) {
+    updateSaveStatus('保存失败：浏览器可能禁用了 localStorage');
+    console.error('保存游戏失败', error);
+  }
+}
+
+function hydrateSaveData(saveData) {
+  return {
+    ...createInitialGameState(),
+    ...saveData,
+    inventory: Array.isArray(saveData.inventory) ? saveData.inventory : [],
+    npcs: Array.isArray(saveData.npcs) ? saveData.npcs : [],
+    seenItemIds: Array.isArray(saveData.seenItemIds) ? saveData.seenItemIds : [],
+    logs: Array.isArray(saveData.logs) && saveData.logs.length > 0 ? saveData.logs : [...INITIAL_GAME_STATE.logs],
+  };
+}
+
+function loadSavedGame() {
+  try {
+    const rawSave = localStorage.getItem(STORAGE_KEY);
+    if (!rawSave) {
+      return false;
+    }
+
+    const saveData = hydrateSaveData(JSON.parse(rawSave));
+    Object.assign(gameState, saveData);
+    updateSaveStatus('已恢复上次进度');
+    return true;
+  } catch (error) {
+    localStorage.removeItem(STORAGE_KEY);
+    updateSaveStatus('存档损坏，已重开新局');
+    console.error('读取游戏存档失败', error);
+    return false;
+  }
+}
+
+function clearSavedGame() {
+  localStorage.removeItem(STORAGE_KEY);
+  updateSaveStatus('存档已清除');
 }
 
 function getNextPlayerBidText() {
@@ -337,6 +475,7 @@ function renderState() {
   document.querySelector('#hotCategoryText').textContent = `${gameState.hotCategory} ↑`;
   document.querySelector('#currentPriceText').textContent = formatCurrency(gameState.currentPrice);
   document.querySelector('#leaderText').textContent = gameState.leader;
+  updateSaveStatus(gameState.saveStatus);
   renderNpcs();
   renderInventory();
   renderAppraisal();
@@ -536,14 +675,7 @@ function getInventoryValue() {
   return gameState.inventory.reduce((total, entry) => total + entry.salePrice, 0);
 }
 
-function endGame() {
-  if (gameState.gameOver) {
-    return;
-  }
-
-  gameState.gameOver = true;
-  gameState.auctionEnded = true;
-
+function renderGameResult() {
   const inventoryValue = getInventoryValue();
   const finalAssets = gameState.cash + inventoryValue;
   const isWin = gameState.cash >= gameState.targetCash;
@@ -563,23 +695,31 @@ function endGame() {
     </dl>
   `;
 
+  return { inventoryValue, finalAssets };
+}
+
+function endGame() {
+  if (gameState.gameOver) {
+    renderGameResult();
+    return;
+  }
+
+  gameState.gameOver = true;
+  gameState.auctionEnded = true;
+
+  const { finalAssets } = renderGameResult();
+
   addLog(`7 天挑战结束：最终现金 ${formatCurrency(gameState.cash)}，最终资产 ${formatCurrency(finalAssets)}。`);
 }
 
 function resetGame() {
-  Object.assign(gameState, {
-    ...INITIAL_GAME_STATE,
-    inventory: [],
-    npcs: [],
-    seenItemIds: [],
-  });
+  clearSavedGame();
+  Object.assign(gameState, createInitialGameState());
 
-  document.querySelector('#logList').innerHTML = `
-    <li>欢迎来到跳蚤市场，第一件拍品已经上台。</li>
-    <li>当前步骤：阶段 ${gameState.phase} / Step ${gameState.step}（${gameState.stepIndex}/${gameState.phaseStepTotal}）${gameState.stepName}。</li>
-  `;
   document.querySelector('#resultPanel').hidden = true;
+  document.querySelector('#resultPanel').classList.remove('win', 'loss');
   renderStepStatus();
+  renderLogs();
   startNewMarketDay(true);
   loadNextItem();
   addLog('NPC 已入场。你每次出价后，他们会按心理价决定是否跟价。');
@@ -612,6 +752,19 @@ function initGame() {
 
   renderStepStatus();
   bindPlayerActions();
+
+  if (loadSavedGame() && gameState.currentItem) {
+    renderItem(gameState.currentItem);
+    renderLogs();
+    renderState();
+    if (gameState.gameOver) {
+      endGame();
+    }
+    addLog('已从本地存档恢复进度。', { skipSave: true });
+    return;
+  }
+
+  renderLogs();
   startNewMarketDay(true);
   loadNextItem();
   addLog('NPC 已入场。你每次出价后，他们会按心理价决定是否跟价。');
