@@ -241,7 +241,7 @@
 
 ## 当前推荐下一步
 
-当前推荐下一步：阶段 10 已推进到 Step 10.2。下一步建议继续 Step 10.3 首轮数值微调，或部署 GitHub Pages / Netlify 收集真实反馈。
+当前推荐下一步：阶段 10 已完成。下一步建议浏览器试玩 2-3 局，观察新手局是否更容易产生“捡漏赚到”的正反馈；也可以部署 GitHub Pages / Netlify 收集真实反馈。
 
 
 ## 阶段 7：体验增强
@@ -447,7 +447,7 @@
   - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：小屏首屏进一步减少滚动成本，核心状态、拍品、止损线和主按钮更快进入视野
   - 步骤位置：阶段 10 / Step 10.2（2/3）
-- [ ] Step 10.3 首轮数值微调
+- [x] Step 10.3 首轮数值微调
   - 文件：`src/main.js`, `src/auction.js`, `src/data/npcs.js`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：根据试玩目标调整现金目标、出价跨度、NPC 激进度和出售倍率，让 7 天挑战更接近“差一点就能赢”的节奏
   - 步骤位置：阶段 10 / Step 10.3（3/3）
@@ -532,3 +532,34 @@
 - `git diff --check`
 - `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `湾区收买佬`、`mobile-action-tabs` 和 `decisionSummary`。
 - 以 375x812 手机视口打开本地页面，首屏应直接看到状态、当前价、拍品、止损线与底部操作栏。
+
+### Step 10.3 首轮数值微调
+
+步骤位置：阶段 10 / Step 10.3（3/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/auction.js`
+- `src/data/npcs.js`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 降低整体挑战难度：起始资金从 ￥1,200 提到 ￥1,500，现金目标从 ￥6,500 降到 ￥5,600。
+- 库存上限从 4 提到 5，减少新玩家前几局因为压货被迫放弃的挫败感。
+- 快速出售倍率上调：普通货更少亏钱，热点货更容易卖出爽感；前两天额外给 8% 新手变现红利。
+- 首局教学保护从前 2 件扩到前 3 件，并优先给价差更明显、风险可读的机会单。
+- NPC 激进度整体下调，青衣少侠少跳价少上头，铁算盘更早撤，笑面狐更早停止抬价。
+- 止损线略放宽，降低玩家刚学会出价时“明明能赚却被提示吓退”的概率。
+- 存档 key 升到 `kelly-king-save-v17`，阶段标记更新到 10.3。
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `￥1,500` 和 `￥5,600`。
+- 新开一局，前 3 件应更偏机会单，快速出售报价更容易出现正反馈。

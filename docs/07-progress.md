@@ -1196,3 +1196,33 @@
 - `git diff --check`
 - `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `湾区收买佬`、`mobile-action-tabs` 和 `decisionSummary`。
 - 以 375x812 手机视口打开本地页面，首屏应直接看到状态、当前价、拍品、止损线与底部操作栏。
+
+### Step 10.3 首轮数值微调
+
+步骤位置：阶段 10 / Step 10.3（3/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/auction.js`
+- `src/data/npcs.js`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 按“降低难度、提高前几局爽感”的方向完成第一轮数值调校。
+- 起始现金提高到 ￥1,500，目标现金降低到 ￥5,600，库存上限提高到 5。
+- 普通/热点快速出售倍率上调，并增加前两天 8% 变现红利，强化早期卖赚的反馈。
+- 首局前 3 件改为更友好的机会单池，避免开局连续遇到陷阱或利润薄货。
+- NPC 出价压力下调，减少被连续抬价顶爆止损线的频率。
+- README 和首页文案同步新的目标数值。
+- 存档 key 升到 `kelly-king-save-v17`，阶段标记更新到 10.3。
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `￥1,500` 和 `￥5,600`。

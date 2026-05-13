@@ -1,17 +1,18 @@
-const STORAGE_KEY = 'kelly-king-save-v16';
+const STORAGE_KEY = 'kelly-king-save-v17';
 const TUTORIAL_KEY = 'kelly-king-tutorial-seen-v1';
 const MAX_LOG_ENTRIES = 80;
 
 const BALANCE_CONFIG = {
-  startingCash: 1200,
-  targetCash: 6500,
-  inventoryLimit: 4,
-  hotSaleMultiplier: { min: 1.12, max: 1.34 },
-  normalSaleMultiplier: { min: 0.88, max: 1.1 },
+  startingCash: 1500,
+  targetCash: 5600,
+  inventoryLimit: 5,
+  hotSaleMultiplier: { min: 1.18, max: 1.42 },
+  normalSaleMultiplier: { min: 0.95, max: 1.18 },
+  earlySaleBonus: { maxDay: 2, multiplier: 1.08 },
   dayValueRanges: [
-    { maxDay: 2, minValue: 0, maxValue: 1000 },
-    { maxDay: 5, minValue: 300, maxValue: 1800 },
-    { maxDay: 7, minValue: 650, maxValue: Infinity },
+    { maxDay: 2, minValue: 0, maxValue: 1300 },
+    { maxDay: 5, minValue: 250, maxValue: 1900 },
+    { maxDay: 7, minValue: 550, maxValue: Infinity },
   ],
 };
 
@@ -55,10 +56,10 @@ const MARKET_EVENTS = [
 
 const INITIAL_GAME_STATE = {
   phase: 10,
-  step: '10.2',
-  stepIndex: 2,
+  step: '10.3',
+  stepIndex: 3,
   phaseStepTotal: 3,
-  stepName: '移动端压缩模式',
+  stepName: '首轮数值微调',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -105,7 +106,7 @@ let tutorialStep = 0;
 const TUTORIAL_STEPS = [
   {
     title: '目标只有一个：现金过线',
-    text: '7 天、每天 5 件货。现金到 ￥6,500 才算真正赢，库存报价只是参考，最后别把利润都压在货里。',
+    text: '7 天、每天 5 件货。现金到 ￥5,600 就算过线，前两天更适合练手捡甜头，但最后仍要把利润落袋。',
     visual: ['7 天', '5 件/天', '现金目标'],
     focusSelector: '.status-strip',
     focusLabel: '先看这里：天数、现金、目标差额',
@@ -146,12 +147,16 @@ function filterItemsForCurrentDay(items) {
 
 const FIRST_RUN_TEACHING_LOTS = [
   {
-    ids: ['bt-figure-001', 'hqb-console-001', 'gz-toy-001'],
-    reason: '第一件先给你一单好判断的热身货：价格不重、风险清楚，适合练手。',
+    ids: ['hk-camera-001', 'hk-record-001', 'hqb-console-001'],
+    reason: '第一件先给你一单容易出甜头的热身货：价差明显，适合放心练手。',
   },
   {
-    ids: ['hqb-phone-001', 'macau-watch-002', 'gz-coin-001'],
-    reason: '第二件继续小额试水：就算看走眼，也不至于一开局伤筋动骨。',
+    ids: ['bt-figure-001', 'hk-lens-001', 'gz-toy-001'],
+    reason: '第二件继续给机会单：风险看得见，但只要不强抢，通常有利润空间。',
+  },
+  {
+    ids: ['hqb-phone-001', 'gz-coin-001', 'macau-watch-002'],
+    reason: '第三件仍然小额试水：先让现金滚起来，再去碰高波动货。',
   },
 ];
 
@@ -222,7 +227,7 @@ function getSuggestedStopPrice(item) {
   const riskLevel = getRiskLevel(item);
   const hotBonus = item.category === gameState.hotCategory ? 1.08 : 1;
   const rarityBonus = item.rarity === 'epic' ? 1.08 : item.rarity === 'rare' ? 1.04 : 1;
-  const riskPenalty = riskLevel === 'high' ? 0.72 : riskLevel === 'medium' ? 0.88 : 1;
+  const riskPenalty = riskLevel === 'high' ? 0.78 : riskLevel === 'medium' ? 0.92 : 1;
   const estimateAnchor = item.estimateMin * 0.35 + item.estimateMax * 0.65;
   const rawStop = estimateAnchor * hotBonus * rarityBonus * riskPenalty;
   const cappedStop = Math.min(rawStop, item.estimateMax * 1.08, gameState.cash);
@@ -355,7 +360,10 @@ function calculateSalePrice(item) {
     ? BALANCE_CONFIG.hotSaleMultiplier
     : BALANCE_CONFIG.normalSaleMultiplier;
   const eventMultiplier = gameState.marketEvent?.saleMultiplier ?? 1;
-  return Math.round(item.realValue * getRandomMultiplier(saleRange.min, saleRange.max) * eventMultiplier);
+  const earlySaleMultiplier = gameState.day <= BALANCE_CONFIG.earlySaleBonus.maxDay
+    ? BALANCE_CONFIG.earlySaleBonus.multiplier
+    : 1;
+  return Math.round(item.realValue * getRandomMultiplier(saleRange.min, saleRange.max) * eventMultiplier * earlySaleMultiplier);
 }
 
 function getProfitAmount(entry) {
