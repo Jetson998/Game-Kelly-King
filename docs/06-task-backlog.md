@@ -168,7 +168,7 @@
 
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
-- `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `湾区捡漏王`、`styles.css` 和 `main.js`
+- `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `湾区货王`、`styles.css` 和 `main.js`
 - 打开 `http://127.0.0.1:4173/`，大屏和窄屏下主要操作按钮都应可读、可点击
 
 ### 大湾区灰市捡漏风格改版
@@ -220,7 +220,7 @@
 
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
-- `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `湾区捡漏王`、`styles.css` 和 `main.js`
+- `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `湾区货王`、`styles.css` 和 `main.js`
 - 浏览器试玩：首屏能理解目标，出价/放弃/下一件/快速出售/刷新恢复均可用
 
 
