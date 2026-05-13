@@ -57,7 +57,66 @@ button.ghost {
 }
 
 .hero {
-  margin-bottom: 24px;
+  margin-bottom: 20px;
+}
+
+.challenge-board {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(280px, 1.1fr);
+  gap: 20px;
+  align-items: center;
+  margin-bottom: 16px;
+  padding: 22px;
+  border: 1px solid rgba(247, 189, 75, 0.24);
+  border-radius: 26px;
+  background:
+    linear-gradient(135deg, rgba(247, 189, 75, 0.16), rgba(104, 211, 145, 0.08)),
+    rgba(27, 31, 42, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.challenge-board h2 {
+  margin-bottom: 8px;
+  font-size: clamp(1.55rem, 4vw, 2.3rem);
+  letter-spacing: -0.03em;
+}
+
+.challenge-board p {
+  margin-bottom: 0;
+  color: var(--muted);
+}
+
+.wealth-progress {
+  display: grid;
+  gap: 10px;
+}
+
+.wealth-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.wealth-progress-meta strong {
+  color: var(--green);
+}
+
+.wealth-progress-track {
+  height: 16px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.wealth-progress-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--gold), var(--green));
+  transition: width 0.28s ease;
 }
 
 .eyebrow {
@@ -214,6 +273,82 @@ h3 {
   margin-top: 16px;
 }
 
+.decision-hints {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.decision-hints span {
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.decision-hints .hint-hot,
+.decision-hints .hint-potential {
+  border-color: rgba(104, 211, 145, 0.2);
+  background: rgba(104, 211, 145, 0.1);
+}
+
+.decision-hints .hint-danger {
+  border-color: rgba(252, 129, 129, 0.22);
+  background: rgba(252, 129, 129, 0.12);
+  color: #ffd2d2;
+}
+
+.play-guide {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(247, 189, 75, 0.18);
+  border-radius: 18px;
+  background: rgba(247, 189, 75, 0.08);
+}
+
+.play-guide strong {
+  color: var(--gold);
+}
+
+.play-guide span {
+  color: rgba(244, 239, 229, 0.88);
+  line-height: 1.55;
+}
+
+.deal-spotlight {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(104, 211, 145, 0.22);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(104, 211, 145, 0.16), rgba(247, 189, 75, 0.08));
+}
+
+.deal-spotlight[hidden] {
+  display: none;
+}
+
+.deal-spotlight.loss {
+  border-color: rgba(252, 129, 129, 0.26);
+  background: linear-gradient(135deg, rgba(252, 129, 129, 0.15), rgba(255, 255, 255, 0.05));
+}
+
+.deal-spotlight h3 {
+  margin-bottom: 8px;
+}
+
+.deal-spotlight p:last-child {
+  margin-bottom: 0;
+  color: rgba(244, 239, 229, 0.9);
+  line-height: 1.65;
+}
+
 .item-tags span {
   padding: 8px 10px;
   border-radius: 999px;
@@ -352,7 +487,9 @@ h3 {
   .game-layout,
   .item-card,
   .bid-box,
-  .action-row {
+  .action-row,
+  .challenge-board,
+  .decision-hints {
     grid-template-columns: 1fr;
   }
 
@@ -682,6 +819,16 @@ button:not(:disabled):active {
     line-height: 1.65;
   }
 
+  .challenge-board {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .wealth-progress-meta {
+    flex-direction: column;
+    gap: 4px;
+  }
+
   .status-bar,
   .side-panel {
     grid-template-columns: 1fr;
@@ -741,6 +888,10 @@ button:not(:disabled):active {
 
   .item-tags {
     gap: 8px;
+  }
+
+  .decision-hints {
+    grid-template-columns: 1fr;
   }
 
   .item-tags span {

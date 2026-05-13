@@ -11,8 +11,23 @@
     <header class="hero">
       <p class="eyebrow">Auction Mini Game</p>
       <h1>捡漏之王</h1>
-      <p class="subtitle">看估值、压价格、别上头。7 天内把现金做到 ￥6,500。</p>
+      <p class="subtitle">七天拍场，一千二起家。看货、读人、压价，别被笑面人抬进坑里。</p>
     </header>
+
+    <section class="challenge-board" aria-label="挑战目标">
+      <div>
+        <p class="eyebrow">7 Days Challenge</p>
+        <h2>￥1,200 滚到 ￥6,500</h2>
+        <p id="targetGapText">距离捡漏之王还差 ￥5,300</p>
+      </div>
+      <div class="wealth-progress" aria-label="财富进度">
+        <div class="wealth-progress-meta">
+          <span id="wealthProgressText">财富进度：￥1,200 / ￥6,500</span>
+          <strong id="wealthProgressPercent">18%</strong>
+        </div>
+        <div class="wealth-progress-track"><span id="wealthProgressBar"></span></div>
+      </div>
+    </section>
 
     <section class="status-bar" aria-label="玩家状态">
       <article class="status-card">
@@ -43,6 +58,11 @@
           <span id="stepText" class="lot-index">第 1 件</span>
         </div>
 
+        <section class="play-guide" aria-label="玩法提示">
+          <strong>这局怎么赢？</strong>
+          <span>看估值和风险 → 观察三位对手 → 低价拍下 → 出手变现 → 7 天内冲到目标现金。</span>
+        </section>
+
         <div class="item-card">
           <div class="item-image-placeholder" aria-hidden="true">?</div>
           <div class="item-info">
@@ -53,6 +73,11 @@
               <span>起拍价：￥200</span>
               <span>模糊估值：￥300 - ￥1,500</span>
               <span>风险：品牌标识有磨损</span>
+            </div>
+            <div id="decisionHints" class="decision-hints" aria-label="判断提示">
+              <span>捡漏潜力：未知</span>
+              <span>价格位置：等待开拍</span>
+              <span>今日热度：未命中</span>
             </div>
           </div>
         </div>
@@ -76,11 +101,17 @@
           </div>
         </div>
 
+        <section id="dealSpotlight" class="deal-spotlight" hidden>
+          <p class="eyebrow">Appraisal Flash</p>
+          <h3 id="dealSpotlightTitle">鉴定完成</h3>
+          <p id="dealSpotlightText">成交后会在这里显示赚亏。</p>
+        </section>
+
         <div class="action-row" aria-label="竞价操作">
-          <button type="button" data-bid-amount="50">+50</button>
-          <button type="button" data-bid-amount="100">+100</button>
-          <button type="button" data-bid-amount="500">+500</button>
-          <button type="button" id="passButton" class="ghost">放弃</button>
+          <button type="button" data-bid-amount="50">小加一口 +50</button>
+          <button type="button" data-bid-amount="100">稳稳跟价 +100</button>
+          <button type="button" data-bid-amount="500">豪掷一刀 +500</button>
+          <button type="button" id="passButton" class="ghost">收手观望</button>
           <button type="button" id="nextItemButton" class="ghost" disabled>下一件</button>
         </div>
         <p id="stepHint" class="hint">提示：出价不要超过你愿意承担的风险；放弃不扣钱。</p>
@@ -100,16 +131,16 @@
           </div>
           <ul class="npc-list">
             <li>
-              <strong>阿杰</strong>
-              <span>冲动散客，做过几单小买卖，最容易被暴富故事点燃。</span>
+              <strong>青衣少侠</strong>
+              <span>初入江湖的快意客，见稀罕物容易热血上头。</span>
             </li>
             <li>
-              <strong>老周</strong>
-              <span>旧货行老板，懂行情、算利润，利润薄了马上撤。</span>
+              <strong>铁算盘沈三</strong>
+              <span>旧货行里的铁算盘，利润薄了便立刻收手。</span>
             </li>
             <li>
-              <strong>马哥</strong>
-              <span>拍场老油条，嘴上轻松，手上最会试探别人底线。</span>
+              <strong>笑面狐胡不归</strong>
+              <span>笑里藏刀的拍场掮客，最会把价格抬到刀口。</span>
             </li>
           </ul>
         </section>

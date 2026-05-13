@@ -113,7 +113,7 @@
   - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：玩家界面隐藏开发步骤标记，关键文案更短，小屏布局、按钮点击区域和对手提示更适合试玩
   - 步骤位置：阶段 5 / Step 5.2（2/3）
-- [ ] Step 5.3 发布前整理
+- [x] Step 5.3 发布前整理
   - 文件：`README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：补充玩法说明、当前版本状态和本地运行/验证方式
   - 步骤位置：阶段 5 / Step 5.3（3/3）
@@ -196,12 +196,37 @@
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
 
+
+### Step 5.3 发布前整理
+
+步骤位置：阶段 5 / Step 5.3（3/3）
+
+完成文件：
+
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `src/data/npcs.js`
+
+完成内容：
+
+- 确认方案 B：保留现实大湾区货源，叠加半现代江湖拍场气质
+- 对手改为青衣少侠、铁算盘沈三、笑面狐胡不归，强化读人和抬价压力
+- 增加首屏挑战目标与财富进度，玩家更清楚 7 天现金目标
+- 增加玩法引导、拍品判断提示和成交鉴定高亮，减少试玩迷路
+- 判断提示避免直接使用真实价值剧透，改为基于估值区间、风险词和稀有度
+- README 补充玩法说明、当前版本状态、本地运行和验证方式
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `捡漏之王`、`styles.css` 和 `main.js`
+- 浏览器试玩：首屏能理解目标，出价/放弃/下一件/快速出售/刷新恢复均可用
+
 ## 当前推荐下一步
 
-继续：
-
-```text
-阶段 5 / Step 5.3 发布前整理
-```
-
-补充 README 的玩法说明、当前版本状态和本地打开/验证方式，为后续发布或分享做准备。
+阶段 5 已完成。下一步可以做发布部署（GitHub Pages / Netlify）或继续新增内容（更多拍品、事件卡、音效和成就）。

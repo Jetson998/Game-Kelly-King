@@ -110,6 +110,48 @@ function renderStepStatus() {
   document.querySelector('#stepHint').textContent = `提示：现金目标 ${formatCurrency(gameState.targetCash)}；放弃不扣钱，拍下后会显示真实价值。`;
 }
 
+function getPricePositionText(item) {
+  if (gameState.currentPrice < item.estimateMin) {
+    return '价格位置：低于估值下沿，可观察';
+  }
+
+  if (gameState.currentPrice <= item.estimateMax) {
+    return '价格位置：进入估值区间，别上头';
+  }
+
+  return '价格位置：超过估值上沿，高危';
+}
+
+function getBargainPotentialText(item) {
+  const estimateSpread = item.estimateMax - item.estimateMin;
+  const upsideByEstimate = item.estimateMax - item.startPrice;
+  const riskText = `${item.risk} ${item.tags.join(' ')}`;
+  const hasObviousTrapSignal = /真假|暗病|未知|高风险|难卖|压库存|维修|缺失/.test(riskText);
+
+  if (item.rarity === 'epic' || estimateSpread >= item.startPrice * 5) {
+    return hasObviousTrapSignal ? '捡漏潜力：很高，也很容易翻车' : '捡漏潜力：很高，值得盯紧';
+  }
+
+  if (item.rarity === 'rare' || upsideByEstimate >= item.startPrice * 2.2) {
+    return hasObviousTrapSignal ? '捡漏潜力：偏高，风险也偏明' : '捡漏潜力：偏高';
+  }
+
+  if (hasObviousTrapSignal && upsideByEstimate < item.startPrice) {
+    return '捡漏潜力：偏保守，别硬冲';
+  }
+
+  return '捡漏潜力：中等';
+}
+
+function renderDecisionHints(item) {
+  const isHot = item.category === gameState.hotCategory;
+  document.querySelector('#decisionHints').innerHTML = [
+    { text: getBargainPotentialText(item), className: 'hint-potential' },
+    { text: getPricePositionText(item), className: gameState.currentPrice > item.estimateMax ? 'hint-danger' : 'hint-price' },
+    { text: isHot ? '今日热度：命中热点，出手更快' : '今日热度：普通行情', className: isHot ? 'hint-hot' : '' },
+  ].map((hint) => `<span class="${hint.className}">${hint.text}</span>`).join('');
+}
+
 function renderItem(item) {
   const isHot = item.category === gameState.hotCategory;
   document.querySelector('#itemName').textContent = item.name;
@@ -122,6 +164,7 @@ function renderItem(item) {
     ...(isHot ? [{ text: `今日热点：${item.category}`, className: 'hot-tag' }] : []),
     ...item.tags.map((tag) => ({ text: tag })),
   ].map((tag) => `<span class="${tag.className ?? ''}">${tag.text}</span>`).join('');
+  renderDecisionHints(item);
 }
 
 function getNpcPressureLevel(npc) {
@@ -161,29 +204,29 @@ function getNpcMindHint(npc) {
 
   if (npc.id === 'rookie') {
     if (likesCategory || item.rarity === 'rare' || item.rarity === 'epic') {
-      return `${pressure}：阿杰已经开始幻想这一单翻身，可能会冲动跳价；别被他的情绪带偏。`;
+      return `${pressure}：他眼里有少年气，见稀罕物便想抢一手；别被这股热血带偏。`;
     }
     if (avoidsCategory) {
-      return `${pressure}：阿杰不太懂这一路货色，跟价参考价值偏低。`;
+      return `${pressure}：他不太懂这一路货色，跟价参考价值偏低。`;
     }
-    return `${pressure}：阿杰多半凭感觉出价，场面越热越容易失了分寸。`;
+    return `${pressure}：他多半凭一口气出价，场面越热越容易失了分寸。`;
   }
 
   if (npc.id === 'dealer') {
     if (likesCategory || item.category === gameState.hotCategory) {
-      return `${pressure}：老周还在算转手空间；他肯跟，通常说明这货不是纯垃圾。`;
+      return `${pressure}：沈三还在拨算盘；他肯跟，通常说明这货不是纯垃圾。`;
     }
     if (avoidsCategory) {
-      return `${pressure}：老周不爱沾这类风险货，早退不一定代表东西差。`;
+      return `${pressure}：沈三不爱沾这类风险货，早退不一定代表东西差。`;
     }
-    return `${pressure}：老周只认利润，他收手时，多半是价格已经不香。`;
+    return `${pressure}：铁算盘只认利润，他收手时，多半是价格已经不香。`;
   }
 
   if (npc.id === 'shill') {
     if (likesCategory) {
-      return `${pressure}：马哥越轻松越要小心，他可能正等你多加一口。`;
+      return `${pressure}：胡不归笑得越深越要小心，他可能正等你多加一口。`;
     }
-    return `${pressure}：他未必真想买，重点是看他什么时候突然收手。`;
+    return `${pressure}：他未必真想买，重点是看他何时忽然合扇收手。`;
   }
 
   return `${pressure}：${npc.tell}`;
@@ -285,6 +328,26 @@ function renderInventory() {
       <button type="button" class="sell-button" data-sell-index="${index}" ${gameState.gameOver ? 'disabled' : ''}>快速出售</button>
     </li>
   `).join('');
+}
+
+function renderDealSpotlight(entry) {
+  const spotlight = document.querySelector('#dealSpotlight');
+  const title = document.querySelector('#dealSpotlightTitle');
+  const text = document.querySelector('#dealSpotlightText');
+  const profit = entry.item.realValue - entry.purchasePrice;
+  const isProfit = profit >= 0;
+
+  spotlight.hidden = false;
+  spotlight.classList.toggle('profit', isProfit);
+  spotlight.classList.toggle('loss', !isProfit);
+  title.textContent = isProfit ? '捡漏成功！' : '打眼了！';
+  text.textContent = `你以 ${formatCurrency(entry.purchasePrice)} 拿下「${entry.item.name}」，真实价值 ${formatCurrency(entry.item.realValue)}，${getProfitText(entry)}。`;
+}
+
+function hideDealSpotlight() {
+  const spotlight = document.querySelector('#dealSpotlight');
+  spotlight.hidden = true;
+  spotlight.classList.remove('profit', 'loss');
 }
 
 function renderAppraisal() {
@@ -480,6 +543,19 @@ function renderPlayerActions() {
     : '下一件';
 }
 
+function renderWealthProgress() {
+  const ratio = Math.min(gameState.cash / gameState.targetCash, 1);
+  const gap = Math.max(gameState.targetCash - gameState.cash, 0);
+  const percent = Math.round(ratio * 100);
+
+  document.querySelector('#targetGapText').textContent = gap > 0
+    ? `距离捡漏之王还差 ${formatCurrency(gap)}`
+    : '现金目标已达成，守住胜局。';
+  document.querySelector('#wealthProgressText').textContent = `财富进度：${formatCurrency(gameState.cash)} / ${formatCurrency(gameState.targetCash)}`;
+  document.querySelector('#wealthProgressPercent').textContent = `${percent}%`;
+  document.querySelector('#wealthProgressBar').style.width = `${percent}%`;
+}
+
 function renderState() {
   document.querySelector('#dayText').textContent = `第 ${gameState.day}/${gameState.totalDays} 天 · 第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`;
   document.querySelector('#stepText').textContent = `第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`;
@@ -488,7 +564,9 @@ function renderState() {
   document.querySelector('#hotCategoryText').textContent = `${gameState.hotCategory} ↑`;
   document.querySelector('#currentPriceText').textContent = formatCurrency(gameState.currentPrice);
   document.querySelector('#leaderText').textContent = gameState.leader;
+  renderWealthProgress();
   updateSaveStatus(gameState.saveStatus);
+  renderDecisionHints(gameState.currentItem);
   renderNpcs();
   renderInventory();
   renderAppraisal();
@@ -513,7 +591,8 @@ function settleAuction() {
         salePrice: calculateSalePrice(gameState.currentItem),
       };
       gameState.inventory.push(inventoryEntry);
-      addLog(`成交！你以 ${formatCurrency(gameState.currentPrice)} 拍下「${gameState.currentItem.name}」，物品已进入库存。`);
+      renderDealSpotlight(inventoryEntry);
+      addLog(`落槌！你以 ${formatCurrency(gameState.currentPrice)} 拍下「${gameState.currentItem.name}」，物品已入库。`);
       addLog(`鉴定完成：真实价值 ${formatCurrency(gameState.currentItem.realValue)}，${getProfitText(inventoryEntry)}。`);
     }
   } else if (gameState.leader !== '暂无') {
@@ -690,6 +769,7 @@ function loadNextItem() {
   gameState.auctionEnded = false;
   gameState.settlementDone = false;
 
+  hideDealSpotlight();
   renderItem(gameState.currentItem);
   renderState();
   addLog(`第 ${gameState.day} 天第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件：「${gameState.currentItem.name}」上台。`);
@@ -742,6 +822,7 @@ function resetGame() {
 
   document.querySelector('#resultPanel').hidden = true;
   document.querySelector('#resultPanel').classList.remove('win', 'loss');
+  hideDealSpotlight();
   renderStepStatus();
   renderLogs();
   startNewMarketDay(true);

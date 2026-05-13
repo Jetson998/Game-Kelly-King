@@ -633,3 +633,35 @@
 - 运行 `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - 运行 `git diff --check`
 - 打开 `src/index.html`，应看到大湾区流动拍场文案、区域货源分类和阿杰/老周/马哥三名 NPC
+
+### Step 5.3 发布前整理
+
+步骤位置：阶段 5 / Step 5.3（3/3）
+
+完成文件：
+
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `src/data/npcs.js`
+
+完成内容：
+
+- 采用方案 B：现实大湾区货源 + 半现代江湖拍场气质
+- 对手名与性格统一为青衣少侠、铁算盘沈三、笑面狐胡不归
+- 从体验角度新增首屏挑战目标、财富进度、玩法引导、判断提示和成交反馈
+- 优化判断提示，避免用真实价值提前剧透拍品好坏
+- README 更新为可发布说明，包含玩法、本地运行、验证方式和当前版本状态
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地静态服务器 + curl 验证页面可访问
+
+### 当前状态
+
+阶段 5 / Step 5.3 已完成。项目已具备第一版可分享试玩状态。
