@@ -362,6 +362,11 @@ function renderSettlement() {
   const pending = gameState.pendingSettlement;
   const settlementView = document.querySelector('#settlementView');
   const auctionView = document.querySelector('#auctionView');
+  if (gameState.gameOver) {
+    settlementView.hidden = true;
+    auctionView.hidden = true;
+    return;
+  }
   settlementView.hidden = !gameState.auctionEnded || !pending;
   auctionView.hidden = gameState.auctionEnded && Boolean(pending);
 
@@ -416,8 +421,13 @@ function renderState() {
   document.querySelector('#hotCategoryText').textContent = gameState.hotCategory;
   document.querySelector('#currentPriceText').textContent = formatCurrency(gameState.currentPrice);
   document.querySelector('#leaderText').textContent = gameState.leader === '暂无' ? getAuctionStatusLabel() : `${gameState.leader} 领先`;
-  document.querySelector('#stageTitle').textContent = gameState.auctionEnded && gameState.pendingSettlement ? document.querySelector('#stageTitle').textContent : '现在买不买？';
-  document.querySelector('#stageEyebrow').textContent = gameState.auctionEnded && gameState.pendingSettlement ? 'Settlement' : 'Current Lot';
+  if (gameState.gameOver) {
+    document.querySelector('#stageTitle').textContent = '挑战结束';
+    document.querySelector('#stageEyebrow').textContent = 'Final Result';
+  } else {
+    document.querySelector('#stageTitle').textContent = gameState.auctionEnded && gameState.pendingSettlement ? document.querySelector('#stageTitle').textContent : '现在买不买？';
+    document.querySelector('#stageEyebrow').textContent = gameState.auctionEnded && gameState.pendingSettlement ? 'Settlement' : 'Current Lot';
+  }
   renderWealthProgress();
   updateSaveStatus(gameState.saveStatus);
   if (gameState.currentItem) renderDecisionHints(gameState.currentItem);
