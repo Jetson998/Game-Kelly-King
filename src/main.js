@@ -1,4 +1,5 @@
 const STORAGE_KEY = 'kelly-king-save-v9';
+const TUTORIAL_KEY = 'kelly-king-tutorial-seen-v1';
 const MAX_LOG_ENTRIES = 80;
 
 const BALANCE_CONFIG = {
@@ -99,6 +100,25 @@ function createInitialGameState() {
 }
 
 const gameState = createInitialGameState();
+let tutorialStep = 0;
+
+const TUTORIAL_STEPS = [
+  {
+    title: '目标只有一个：现金过线',
+    text: '7 天、每天 5 件货。现金到 ￥6,500 才算真正赢，库存报价只是参考，最后别把利润都压在货里。',
+    visual: ['7 天', '5 件/天', '现金目标'],
+  },
+  {
+    title: '先看风险，再决定加价',
+    text: '中间三条短提示会告诉你：这件值不值得盯、当前价高不高、是不是热点货。不要被对手加价带节奏。',
+    visual: ['建议', '价格', '热点'],
+  },
+  {
+    title: '拍下后再处理去留',
+    text: '落槌后才会出现鉴定价。赚得稳就马上变现；想赌行情再放库存，但库存只有 4 格。',
+    visual: ['立即卖出', '放入库存', '下一件'],
+  },
+];
 
 function formatCurrency(value) {
   return `￥${Number(value).toLocaleString('zh-CN')}`;
@@ -383,6 +403,41 @@ function renderSoundToggle() {
   if (!button) return;
   button.textContent = `音效：${gameState.soundEnabled ? '开' : '关'}`;
   button.setAttribute('aria-pressed', String(gameState.soundEnabled));
+}
+
+function renderTutorialStep() {
+  const step = TUTORIAL_STEPS[tutorialStep];
+  if (!step) return;
+  document.querySelector('#tutorialTitle').textContent = step.title;
+  document.querySelector('#tutorialText').textContent = step.text;
+  document.querySelector('#tutorialVisual').innerHTML = step.visual.map((text) => `<span>${text}</span>`).join('');
+  document.querySelectorAll('[data-tutorial-dot]').forEach((dot, index) => {
+    dot.classList.toggle('active', index === tutorialStep);
+  });
+  document.querySelector('#tutorialPrevButton').disabled = tutorialStep === 0;
+  document.querySelector('#tutorialNextButton').textContent = tutorialStep === TUTORIAL_STEPS.length - 1 ? '开始拍卖' : '下一步';
+}
+
+function openTutorial() {
+  tutorialStep = 0;
+  renderTutorialStep();
+  document.querySelector('#tutorialOverlay').hidden = false;
+}
+
+function closeTutorial(markSeen = true) {
+  document.querySelector('#tutorialOverlay').hidden = true;
+  if (markSeen) {
+    try { localStorage.setItem(TUTORIAL_KEY, '1'); } catch (error) { console.warn('保存新手引导状态失败', error); }
+  }
+}
+
+function showTutorialIfNeeded() {
+  try {
+    if (localStorage.getItem(TUTORIAL_KEY)) return;
+  } catch (error) {
+    console.warn('读取新手引导状态失败', error);
+  }
+  openTutorial();
 }
 
 function toggleSound() {
@@ -1053,6 +1108,14 @@ function bindPlayerActions() {
   document.querySelector('#inventoryToggle').addEventListener('click', () => { playSound('click'); openInventory(); });
   document.querySelector('#logToggle').addEventListener('click', () => { playSound('click'); openLog(); });
   document.querySelector('#soundToggle').addEventListener('click', toggleSound);
+  document.querySelector('#tutorialReplayButton').addEventListener('click', () => { playSound('click'); openTutorial(); });
+  document.querySelector('#tutorialSkipButton').addEventListener('click', () => closeTutorial(true));
+  document.querySelector('#tutorialPrevButton').addEventListener('click', () => { tutorialStep = Math.max(0, tutorialStep - 1); renderTutorialStep(); });
+  document.querySelector('#tutorialNextButton').addEventListener('click', () => {
+    if (tutorialStep >= TUTORIAL_STEPS.length - 1) { closeTutorial(true); return; }
+    tutorialStep += 1;
+    renderTutorialStep();
+  });
   document.querySelector('#inventoryClose').addEventListener('click', () => { document.querySelector('#inventoryDrawer').hidden = true; });
   document.querySelector('#inventoryDrawer').addEventListener('click', (event) => {
     if (event.target.id === 'inventoryDrawer') document.querySelector('#inventoryDrawer').hidden = true;
@@ -1072,12 +1135,14 @@ function initGame() {
     renderState();
     if (gameState.gameOver) endGame();
     addLog('已恢复本地进度。', { skipSave: true });
+    showTutorialIfNeeded();
     return;
   }
   renderLogs();
   startNewMarketDay(true);
   loadNextItem();
   addLog('对手已入场。加价后，他们会决定是否跟。');
+  showTutorialIfNeeded();
 }
 
 initGame();

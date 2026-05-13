@@ -241,7 +241,7 @@
 
 ## 当前推荐下一步
 
-阶段 7 已完成。当前推荐下一步：GitHub Pages / Netlify 发布部署；或阶段 8 做可视化引导与新手教程。
+阶段 8 已启动。当前推荐下一步：阶段 8 / Step 8.2 做视觉标注与焦点高亮，或部署 GitHub Pages / Netlify。
 
 
 ## 阶段 7：体验增强
@@ -258,3 +258,19 @@
   - 文件：`src/index.html`, `src/main.js`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：提供可关闭的点击、加价、落槌、结算音效，设置会随 localStorage 保存
   - 步骤位置：阶段 7 / Step 7.3（3/3）
+
+
+## 阶段 8：新手引导与可视化教学
+
+- [x] Step 8.1 首次进入教程
+  - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 验收：首次进入显示 3 步新手引导，说明现金目标、判断提示和拍下后处理；关闭后用 localStorage 记住，设置里可重新打开
+  - 步骤位置：阶段 8 / Step 8.1（1/3）
+- [ ] Step 8.2 视觉标注与焦点高亮
+  - 文件：`src/index.html`, `src/main.js`, `src/styles.css`
+  - 验收：引导步骤能高亮对应区域，玩家更清楚该看哪里
+  - 步骤位置：阶段 8 / Step 8.2（2/3）
+- [ ] Step 8.3 首局节奏保护
+  - 文件：`src/main.js`, `src/data/items.js`
+  - 验收：首局前 1-2 件货更适合作为教学样本，降低一上来随机到高风险陷阱的挫败感
+  - 步骤位置：阶段 8 / Step 8.3（3/3）

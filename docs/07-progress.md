@@ -833,3 +833,38 @@
 ```text
 部署 GitHub Pages / Netlify；或阶段 8 做可视化引导与新手教程。
 ```
+
+
+### Step 8.1 首次进入教程
+
+步骤位置：阶段 8 / Step 8.1（1/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 新增首次进入 3 步新手引导弹层，解释 7 天现金目标、判断提示、拍下后的立即卖出/放入库存选择
+- 新增 `kelly-king-tutorial-seen-v1` 本地标记，玩家完成或跳过后不再自动弹出
+- 设置菜单新增“新手引导”入口，玩家可随时重看
+- 引导弹层适配移动端，包含步骤圆点、上一步、下一步/开始拍卖、跳过
+- README 增补新手引导说明和试玩检查项
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地页面 `curl` 检查：页面包含 `New Player Guide` 与 `新手引导`
+- 浏览器试玩：首次进入弹出教程；点“开始拍卖”后刷新不再自动弹出；设置里可重新打开
+
+下一步建议：
+
+```text
+阶段 8 / Step 8.2（2/3）视觉标注与焦点高亮，或部署 GitHub Pages / Netlify。
+```

@@ -21,6 +21,7 @@
           <div class="settings-popover">
             <p class="save-status">存档：<span id="saveStatusText">尚未保存</span></p>
             <button type="button" id="soundToggle" class="ghost setting-toggle" aria-pressed="true">音效：开</button>
+            <button type="button" id="tutorialReplayButton" class="ghost">新手引导</button>
             <button type="button" class="ghost" data-restart-game>重新开始</button>
           </div>
         </details>
@@ -152,6 +153,25 @@
         <li>欢迎来到大湾区流动拍场，第一件货已经上台。</li>
       </ol>
     </details>
+
+    <section id="tutorialOverlay" class="tutorial-overlay" hidden aria-modal="true" role="dialog" aria-labelledby="tutorialTitle">
+      <article class="tutorial-card">
+        <p class="eyebrow">New Player Guide</p>
+        <h2 id="tutorialTitle">先看三件事</h2>
+        <p id="tutorialText">这是一场 7 天捡漏挑战。目标不是每件都买，而是用有限现金做出最划算的选择。</p>
+        <div id="tutorialVisual" class="tutorial-visual" aria-hidden="true"></div>
+        <div class="tutorial-progress" aria-label="引导进度">
+          <span data-tutorial-dot></span>
+          <span data-tutorial-dot></span>
+          <span data-tutorial-dot></span>
+        </div>
+        <div class="tutorial-actions">
+          <button type="button" id="tutorialSkipButton" class="ghost">跳过</button>
+          <button type="button" id="tutorialPrevButton" class="ghost">上一步</button>
+          <button type="button" id="tutorialNextButton">下一步</button>
+        </div>
+      </article>
+    </section>
   </main>
 
   <script src="./data/items.js"></script>
