@@ -164,7 +164,7 @@ function getBargainPotentialText(item) {
   const estimateSpread = item.estimateMax - item.estimateMin;
   const upsideByEstimate = item.estimateMax - item.startPrice;
   const riskText = `${item.risk} ${item.tags.join(' ')}`;
-  const hasObviousTrapSignal = /真假|暗病|未知|高风险|难卖|压库存|维修|缺失/.test(riskText);
+  const hasObviousTrapSignal = /真假|暗病|未知|高风险|难卖|压库存|维修|缺失|返修|临期|渠道|仿品|受潮|故障|鼓包|来源不明|砸手|故事/.test(riskText);
 
   if (gameState.currentPrice > item.estimateMax) return '建议：收手';
   if (item.rarity === 'epic' || estimateSpread >= item.startPrice * 5) {

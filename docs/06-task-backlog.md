@@ -234,11 +234,13 @@
   - 文件：`src/index.html`, `src/main.js`, `src/auction.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：每天随机出现一个“拍场风声”，影响快速出售报价和 NPC 出价激进度；事件展示在主流程上方，存档可恢复事件状态
   - 步骤位置：阶段 6 / Step 6.1（1/3）
-- [ ] Step 6.2 更多拍品与风险词
-  - 验收：扩展拍品池，增加更清晰的高风险/高波动样本
+- [x] Step 6.2 更多拍品与风险词
+  - 文件：`src/data/items.js`, `src/main.js`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 验收：扩展拍品池到 30 件，新增更清晰的高风险/高波动样本，并让判断提示识别更多风险词
+  - 步骤位置：阶段 6 / Step 6.2（2/3）
 - [ ] Step 6.3 成就与复盘
   - 验收：挑战结束后给出最大赚亏、最佳捡漏、最亏打眼等复盘
 
 ## 当前推荐下一步
 
-阶段 6 / Step 6.2：继续扩展更多拍品与风险词；或先做 GitHub Pages / Netlify 发布部署。
+阶段 6 / Step 6.3：新增成就与复盘；或先做 GitHub Pages / Netlify 发布部署。
