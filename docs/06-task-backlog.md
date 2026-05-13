@@ -241,7 +241,7 @@
 
 ## 当前推荐下一步
 
-阶段 8 已推进到 Step 8.2。当前推荐下一步：阶段 8 / Step 8.3 做首局节奏保护，或部署 GitHub Pages / Netlify。
+当前推荐下一步：阶段 8 / Step 8.3 首局节奏保护已完成。下一步建议部署 GitHub Pages / Netlify，或进入阶段 9 做发布页、分享图与试玩反馈收集。
 
 
 ## 阶段 7：体验增强
@@ -270,10 +270,38 @@
   - 文件：`src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：引导步骤能高亮对应区域，玩家更清楚该看哪里
   - 步骤位置：阶段 8 / Step 8.2（2/3）
-- [ ] Step 8.3 首局节奏保护
-  - 文件：`src/main.js`, `src/data/items.js`
+- [x] Step 8.3 首局节奏保护
+  - 文件：`src/main.js`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：首局前 1-2 件货更适合作为教学样本，降低一上来随机到高风险陷阱的挫败感
   - 步骤位置：阶段 8 / Step 8.3（3/3）
+
+
+### Step 8.3 首局节奏保护
+
+步骤位置：阶段 8 / Step 8.3（3/3）
+
+完成文件：
+
+- `src/main.js`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 新增首局前 2 件教学拍品池，优先抽取低额、风险清楚、适合练手的样本
+- 第一件偏向热身货，第二件继续小额试水，避免新玩家开局就遇到高价重仓或强陷阱
+- 教学拍品仍遵守不重复出现，并会优先匹配当日热点里的候选货
+- 上台日志增加短提示，说明这是练手节奏保护
+- 存档 key 升到 `kelly-king-save-v11`，同步当前阶段标记到 8.3
+
+验证方式：
+
+- 新开一局，第 1-2 件应从教学候选池中出现，而不是直接抽到高价重仓或强陷阱货
+- 第 3 件后恢复正常随机拍品池
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+
 
 
 ### Step 8.2 视觉标注与焦点高亮

@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v10';
+const STORAGE_KEY = 'kelly-king-save-v11';
 const TUTORIAL_KEY = 'kelly-king-tutorial-seen-v1';
 const MAX_LOG_ENTRIES = 80;
 
@@ -55,10 +55,10 @@ const MARKET_EVENTS = [
 
 const INITIAL_GAME_STATE = {
   phase: 8,
-  step: '8.2',
-  stepIndex: 2,
+  step: '8.3',
+  stepIndex: 3,
   phaseStepTotal: 3,
-  stepName: '视觉标注与焦点高亮',
+  stepName: '首局节奏保护',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -144,7 +144,39 @@ function filterItemsForCurrentDay(items) {
   return tierItems.length > 0 ? tierItems : items;
 }
 
+const FIRST_RUN_TEACHING_LOTS = [
+  {
+    ids: ['bt-figure-001', 'hqb-console-001', 'gz-toy-001'],
+    reason: '第一件先给你一单好判断的热身货：价格不重、风险清楚，适合练手。',
+  },
+  {
+    ids: ['hqb-phone-001', 'macau-watch-002', 'gz-coin-001'],
+    reason: '第二件继续小额试水：就算看走眼，也不至于一开局伤筋动骨。',
+  },
+];
+
+function shouldUseFirstRunPacing() {
+  return gameState.day === 1
+    && gameState.lotsSeenToday < FIRST_RUN_TEACHING_LOTS.length;
+}
+
+function pickFirstRunTeachingItem(items) {
+  if (!shouldUseFirstRunPacing()) return null;
+  const teachingLot = FIRST_RUN_TEACHING_LOTS[gameState.lotsSeenToday];
+  if (!teachingLot) return null;
+  const seenIds = new Set(gameState.seenItemIds);
+  const candidates = teachingLot.ids
+    .map((id) => items.find((item) => item.id === id))
+    .filter((item) => item && !seenIds.has(item.id));
+  if (candidates.length === 0) return null;
+  const hotCandidate = candidates.find((item) => item.category === gameState.hotCategory);
+  return hotCandidate ?? candidates[0];
+}
+
 function pickRandomItem(items) {
+  const teachingItem = pickFirstRunTeachingItem(items);
+  if (teachingItem) return teachingItem;
+
   const dayPool = filterItemsForCurrentDay(items);
   const availableItems = dayPool.filter((item) => !gameState.seenItemIds.includes(item.id));
   const pool = availableItems.length > 0 ? availableItems : dayPool;
@@ -482,7 +514,7 @@ function updateSaveStatus(text) {
 
 function getSerializableGameState() {
   return {
-    version: 10,
+    version: 11,
     savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,
@@ -894,6 +926,7 @@ function loadNextItem() {
   }
 
   gameState.currentItem = pickRandomItem(AUCTION_ITEMS);
+  const firstRunTeachingLot = shouldUseFirstRunPacing();
   gameState.seenItemIds.push(gameState.currentItem.id);
   gameState.lotsSeenToday += 1;
   gameState.currentPrice = gameState.currentItem.startPrice;
@@ -909,6 +942,10 @@ function loadNextItem() {
   renderItem(gameState.currentItem);
   renderState();
   addLog(`第 ${gameState.day} 天第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件：「${gameState.currentItem.name}」上台。`);
+  if (firstRunTeachingLot) {
+    const teachingLot = FIRST_RUN_TEACHING_LOTS[gameState.lotsSeenToday - 1];
+    if (teachingLot?.reason) addLog(teachingLot.reason);
+  }
 }
 
 function getInventoryValue() {
