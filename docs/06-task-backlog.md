@@ -238,9 +238,11 @@
   - 文件：`src/data/items.js`, `src/main.js`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：扩展拍品池到 30 件，新增更清晰的高风险/高波动样本，并让判断提示识别更多风险词
   - 步骤位置：阶段 6 / Step 6.2（2/3）
-- [ ] Step 6.3 成就与复盘
-  - 验收：挑战结束后给出最大赚亏、最佳捡漏、最亏打眼等复盘
+- [x] Step 6.3 成就与复盘
+  - 文件：`src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 验收：挑战结束后给出成交统计、称号、最佳捡漏、最佳变现、最亏打眼和账面净利复盘
+  - 步骤位置：阶段 6 / Step 6.3（3/3）
 
 ## 当前推荐下一步
 
-阶段 6 / Step 6.3：新增成就与复盘；或先做 GitHub Pages / Netlify 发布部署。
+阶段 6 已完成。下一步建议做 GitHub Pages / Netlify 发布部署，或继续阶段 7：音效、动画与更强复盘策略建议。

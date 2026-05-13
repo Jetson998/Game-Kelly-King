@@ -733,3 +733,30 @@
 ```text
 阶段 6 / Step 6.3（3/3）成就与复盘
 ```
+
+
+### Step 6.3 成就与复盘
+
+步骤位置：阶段 6 / Step 6.3（3/3）
+
+完成文件：
+
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 新增成交历史 `dealHistory`，记录立即卖出、放入库存、库存卖出的单据结果
+- 挑战结束后新增称号、成交数、已变现数、压库存数、账面净利
+- 复盘卡片展示最佳捡漏、最佳变现、最亏打眼，帮助玩家理解这一局输赢原因
+- 存档 key 升级到 `kelly-king-save-v6`，避免旧存档缺少成交历史造成复盘不完整
+- 补充复盘区移动端样式与 README 试玩检查项
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地静态页面应能正常加载，并能在结束态看到称号、成就统计和三张复盘卡片

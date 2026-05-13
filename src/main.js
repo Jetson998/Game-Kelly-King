@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v5';
+const STORAGE_KEY = 'kelly-king-save-v6';
 const MAX_LOG_ENTRIES = 80;
 
 const BALANCE_CONFIG = {
@@ -54,10 +54,10 @@ const MARKET_EVENTS = [
 
 const INITIAL_GAME_STATE = {
   phase: 6,
-  step: '6.1',
-  stepIndex: 1,
-  phaseStepTotal: 1,
-  stepName: '流程驱动界面重构',
+  step: '6.3',
+  stepIndex: 3,
+  phaseStepTotal: 3,
+  stepName: '成就与复盘',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -65,6 +65,7 @@ const INITIAL_GAME_STATE = {
   targetCash: BALANCE_CONFIG.targetCash,
   cash: BALANCE_CONFIG.startingCash,
   inventory: [],
+  dealHistory: [],
   inventoryLimit: BALANCE_CONFIG.inventoryLimit,
   hotCategory: '华强北电子货',
   lastHotCategory: null,
@@ -88,6 +89,7 @@ function createInitialGameState() {
   return {
     ...INITIAL_GAME_STATE,
     inventory: [],
+    dealHistory: [],
     npcs: [],
     seenItemIds: [],
     marketEvent: null,
@@ -292,7 +294,7 @@ function updateSaveStatus(text) {
 
 function getSerializableGameState() {
   return {
-    version: 5,
+    version: 6,
     savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,
@@ -306,6 +308,7 @@ function getSerializableGameState() {
     targetCash: gameState.targetCash,
     cash: gameState.cash,
     inventory: gameState.inventory,
+    dealHistory: gameState.dealHistory,
     inventoryLimit: gameState.inventoryLimit,
     hotCategory: gameState.hotCategory,
     lastHotCategory: gameState.lastHotCategory,
@@ -345,6 +348,7 @@ function hydrateSaveData(saveData) {
     ...createInitialGameState(),
     ...saveData,
     inventory: Array.isArray(saveData.inventory) ? saveData.inventory : [],
+    dealHistory: Array.isArray(saveData.dealHistory) ? saveData.dealHistory : [],
     npcs: Array.isArray(saveData.npcs) ? saveData.npcs : [],
     seenItemIds: Array.isArray(saveData.seenItemIds) ? saveData.seenItemIds : [],
     marketEvent: saveData.marketEvent ?? null,
@@ -596,6 +600,7 @@ function sellPendingNow() {
   if (!entry) return;
   const netCashChange = entry.salePrice - entry.purchasePrice;
   gameState.cash += netCashChange;
+  gameState.dealHistory.push(createDealRecord(entry, 'sold-now'));
   addLog(`立即卖出「${entry.item.name}」：成交扣款 ${formatCurrency(entry.purchasePrice)}，卖出收入 ${formatCurrency(entry.salePrice)}，${getSaleProfitText(entry)}。`);
   finishSettlement();
 }
@@ -614,6 +619,9 @@ function keepPendingItem() {
     return;
   }
   gameState.cash -= entry.purchasePrice;
+  const record = createDealRecord(entry, 'inventory');
+  entry.dealId = record.id;
+  gameState.dealHistory.push(record);
   gameState.inventory.push(entry);
   addLog(`放入库存：「${entry.item.name}」。现金扣除 ${formatCurrency(entry.purchasePrice)}。`);
   finishSettlement();
@@ -624,6 +632,7 @@ function sellInventoryItem(index) {
   const entry = gameState.inventory[index];
   if (!entry) return;
   gameState.cash += entry.salePrice;
+  updateInventoryDealStatus(entry, 'sold-inventory', entry.salePrice - entry.purchasePrice);
   gameState.inventory.splice(index, 1);
   addLog(`卖出库存「${entry.item.name}」，收入 ${formatCurrency(entry.salePrice)}，${getSaleProfitText(entry)}。`);
   renderState();
@@ -683,10 +692,98 @@ function getInventoryValue() {
   return gameState.inventory.reduce((total, entry) => total + entry.salePrice, 0);
 }
 
+function createDealRecord(entry, status) {
+  const realizedProfit = status === 'sold-now' ? entry.salePrice - entry.purchasePrice : null;
+  return {
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    day: gameState.day,
+    lot: gameState.lotsSeenToday,
+    item: entry.item,
+    purchasePrice: entry.purchasePrice,
+    appraisalValue: entry.item.realValue,
+    salePrice: entry.salePrice,
+    status,
+    realizedProfit,
+    appraisalProfit: entry.item.realValue - entry.purchasePrice,
+  };
+}
+
+function getInventoryDealRecord(entry) {
+  return gameState.dealHistory.find((record) => record.id && record.id === entry.dealId);
+}
+
+function updateInventoryDealStatus(entry, status, realizedProfit = null) {
+  const record = getInventoryDealRecord(entry);
+  if (!record) return;
+  record.status = status;
+  record.salePrice = entry.salePrice;
+  record.realizedProfit = realizedProfit;
+}
+
+function getFinalDealRecords() {
+  const inventoryRecordIds = new Set(gameState.inventory.map((entry) => entry.dealId).filter(Boolean));
+  return gameState.dealHistory.map((record) => {
+    if (inventoryRecordIds.has(record.id)) {
+      return { ...record, status: 'inventory', realizedProfit: record.salePrice - record.purchasePrice };
+    }
+    return record;
+  });
+}
+
+function getBestRecord(records, scoreGetter) {
+  return records.reduce((best, record) => {
+    if (!best) return record;
+    return scoreGetter(record) > scoreGetter(best) ? record : best;
+  }, null);
+}
+
+function getWorstRecord(records, scoreGetter) {
+  return records.reduce((worst, record) => {
+    if (!worst) return record;
+    return scoreGetter(record) < scoreGetter(worst) ? record : worst;
+  }, null);
+}
+
+function getResultTitle(finalAssets, isWin) {
+  if (gameState.cash >= gameState.targetCash * 1.25) return '拍场封王';
+  if (isWin) return '捡漏之王';
+  if (finalAssets >= gameState.targetCash) return '货在手里，现金差口气';
+  if (finalAssets >= BALANCE_CONFIG.startingCash * 2) return '眼力不错，还缺周转';
+  return '这局交了学费';
+}
+
+function renderRecordCard(record, emptyText) {
+  if (!record) return `<article class="recap-card muted-card"><strong>${emptyText}</strong><span>多拍几件，结算时会更有参考。</span></article>`;
+  const profit = record.realizedProfit ?? record.appraisalProfit;
+  const profitText = profit >= 0 ? `赚 ${formatCurrency(profit)}` : `亏 ${formatCurrency(Math.abs(profit))}`;
+  return `
+    <article class="recap-card ${profit >= 0 ? 'good' : 'bad'}">
+      <span>第 ${record.day} 天 · 第 ${record.lot} 件</span>
+      <strong>${record.item.name}</strong>
+      <small>买入 ${formatCurrency(record.purchasePrice)} · 估/卖 ${formatCurrency(record.salePrice)} · ${profitText}</small>
+    </article>
+  `;
+}
+
+function getFinalRecap(records, finalAssets, isWin) {
+  const boughtCount = records.length;
+  const soldCount = records.filter((record) => record.status === 'sold-now' || record.status === 'sold-inventory').length;
+  const inventoryCount = records.filter((record) => record.status === 'inventory').length;
+  const realizedProfit = records.reduce((total, record) => total + (record.realizedProfit ?? 0), 0);
+  const bestBargain = getBestRecord(records, (record) => record.appraisalProfit);
+  const bestCashDeal = getBestRecord(records.filter((record) => record.realizedProfit !== null), (record) => record.realizedProfit ?? -Infinity);
+  const worstMistake = getWorstRecord(records, (record) => record.appraisalProfit);
+  const title = getResultTitle(finalAssets, isWin);
+
+  return { boughtCount, soldCount, inventoryCount, realizedProfit, bestBargain, bestCashDeal, worstMistake, title };
+}
+
 function renderGameResult() {
   const inventoryValue = getInventoryValue();
   const finalAssets = gameState.cash + inventoryValue;
   const isWin = gameState.cash >= gameState.targetCash;
+  const records = getFinalDealRecords();
+  const recap = getFinalRecap(records, finalAssets, isWin);
   const resultPanel = document.querySelector('#resultPanel');
   resultPanel.hidden = false;
   resultPanel.classList.toggle('win', isWin);
@@ -695,13 +792,24 @@ function renderGameResult() {
   document.querySelector('#settlementView').hidden = true;
   document.querySelector('#stageTitle').textContent = '挑战结束';
   document.querySelector('#resultContent').innerHTML = `
-    <p class="result-title">${isWin ? '挑战成功！你成了捡漏之王。' : '挑战结束，现金目标还差一点。'}</p>
+    <p class="result-title">${isWin ? '挑战成功！' : '挑战结束。'}称号：${recap.title}</p>
     <dl>
       <div><dt>最终现金</dt><dd>${formatCurrency(gameState.cash)}</dd></div>
       <div><dt>库存报价</dt><dd>${formatCurrency(inventoryValue)}</dd></div>
       <div><dt>最终资产</dt><dd>${formatCurrency(finalAssets)}</dd></div>
       <div><dt>现金目标</dt><dd>${formatCurrency(gameState.targetCash)}</dd></div>
     </dl>
+    <div class="achievement-strip" aria-label="本局成就">
+      <article><span>成交</span><strong>${recap.boughtCount} 单</strong></article>
+      <article><span>已变现</span><strong>${recap.soldCount} 单</strong></article>
+      <article><span>压库存</span><strong>${recap.inventoryCount} 件</strong></article>
+      <article><span>账面净利</span><strong>${formatCurrency(recap.realizedProfit)}</strong></article>
+    </div>
+    <section class="recap-grid" aria-label="本局复盘">
+      ${renderRecordCard(recap.bestBargain, '还没有最佳捡漏')}
+      ${renderRecordCard(recap.bestCashDeal, '还没有变现收益')}
+      ${renderRecordCard(recap.worstMistake, '还没有最亏打眼')}
+    </section>
   `;
   return { finalAssets };
 }
