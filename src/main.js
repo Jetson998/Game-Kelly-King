@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v15';
+const STORAGE_KEY = 'kelly-king-save-v16';
 const TUTORIAL_KEY = 'kelly-king-tutorial-seen-v1';
 const MAX_LOG_ENTRIES = 80;
 
@@ -55,10 +55,10 @@ const MARKET_EVENTS = [
 
 const INITIAL_GAME_STATE = {
   phase: 10,
-  step: '10.1',
-  stepIndex: 1,
+  step: '10.2',
+  stepIndex: 2,
   phaseStepTotal: 3,
-  stepName: '出价止损线提示',
+  stepName: '移动端压缩模式',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,

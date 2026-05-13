@@ -1169,3 +1169,30 @@
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
 - 以 375x812 手机视口打开本地页面，首屏应直接看到状态、当前价、拍品与底部操作栏
+
+### Step 10.2 移动端压缩模式
+
+步骤位置：阶段 10 / Step 10.2（2/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 将上一轮手机端适配整理为正式阶段 10.2，明确验收口径：小屏首屏优先看到状态、当前价、拍品、止损线与主操作。
+- 保留并记录手机压缩模式：隐藏发布/反馈区、吸顶轻导航、手机库存/日志快捷入口、横滑状态卡和对手卡、价格优先拍品卡、固定底部四按钮。
+- README 同步补充小屏压缩模式说明与手动验证点。
+- 存档 key 升到 `kelly-king-save-v16`，阶段标记更新到 10.2。
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `湾区收买佬`、`mobile-action-tabs` 和 `decisionSummary`。
+- 以 375x812 手机视口打开本地页面，首屏应直接看到状态、当前价、拍品、止损线与底部操作栏。

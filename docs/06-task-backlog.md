@@ -241,7 +241,7 @@
 
 ## 当前推荐下一步
 
-当前推荐下一步：阶段 10 已启动。下一步建议继续 Step 10.2 移动端压缩模式，或部署 GitHub Pages / Netlify 收集真实反馈。
+当前推荐下一步：阶段 10 已推进到 Step 10.2。下一步建议继续 Step 10.3 首轮数值微调，或部署 GitHub Pages / Netlify 收集真实反馈。
 
 
 ## 阶段 7：体验增强
@@ -443,7 +443,7 @@
   - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：拍品区显示根据估值、风险、热点和当前现金计算出的止损线；当前价接近或超过止损线时给出更明确的收手提醒
   - 步骤位置：阶段 10 / Step 10.1（1/3）
-- [ ] Step 10.2 移动端压缩模式
+- [x] Step 10.2 移动端压缩模式
   - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：小屏首屏进一步减少滚动成本，核心状态、拍品、止损线和主按钮更快进入视野
   - 步骤位置：阶段 10 / Step 10.2（2/3）
@@ -503,3 +503,32 @@
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
 - 以 375x812 手机视口打开本地页面，首屏应直接看到状态、当前价、拍品与底部操作栏
+
+### Step 10.2 移动端压缩模式
+
+步骤位置：阶段 10 / Step 10.2（2/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 正式把手机端体验修复纳入阶段 10.2：小屏隐藏发布区/反馈卡，优先展示状态、当前价、拍品、止损线与主按钮。
+- 顶部改为吸顶轻导航，桌面库存/日志按钮在手机端收起，改用手机快捷入口。
+- 状态栏、拍品标签、对手卡横向滑动，减少纵向堆叠和首屏滚动成本。
+- 拍品卡价格优先，描述、止损线、对手说明和拍场风声在手机端做短行截断。
+- 底部主操作固定为 App 式四按钮，适配安全区；库存抽屉改底部弹层，日志改快捷展开。
+- 存档 key 升到 `kelly-king-save-v16`，阶段标记更新到 10.2。
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `湾区收买佬`、`mobile-action-tabs` 和 `decisionSummary`。
+- 以 375x812 手机视口打开本地页面，首屏应直接看到状态、当前价、拍品、止损线与底部操作栏。
