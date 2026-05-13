@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v3';
+const STORAGE_KEY = 'kelly-king-save-v4';
 const MAX_LOG_ENTRIES = 80;
 
 const BALANCE_CONFIG = {
