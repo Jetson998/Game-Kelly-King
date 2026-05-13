@@ -961,3 +961,46 @@
 - 未结算时复制按钮不会报错，会提示“打完一局后会生成战绩”。
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
+
+
+### Step 9.2 发布页与移动端落地
+
+步骤位置：阶段 9 / Step 9.2（2/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/styles.css`
+- `src/main.js`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 首页增加发布入口式 Hero，明确 “￥1,200 起家，7 天冲到 ￥6,500” 的目标
+- 用 30 件拍品、3 位对手、一局约 8 分钟作为外部试玩卖点
+- 新增“开始捡漏”按钮，点击后滚动到拍卖主舞台
+- 新增看货、出手、变现 3 步快速玩法卡，帮助移动端玩家快速理解
+- 移动端断点补充单列布局，让首屏更像可直接开玩的小游戏落地页
+- 存档 key 升到 `kelly-king-save-v13`，当前阶段标记更新到 9.2
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地静态页面应包含“开始捡漏”、“￥1,200 起家”和“三步玩法”入口
+
+### 下一步
+
+建议继续：
+
+```text
+阶段 9 / Step 9.3（3/3）试玩反馈收集方案
+```
+
+范围限制：
+
+- 整理试玩反馈问题清单
+- 明确下一轮体验迭代优先级
+- 可补 README 中的反馈入口说明

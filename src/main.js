@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v12';
+const STORAGE_KEY = 'kelly-king-save-v13';
 const TUTORIAL_KEY = 'kelly-king-tutorial-seen-v1';
 const MAX_LOG_ENTRIES = 80;
 
@@ -55,10 +55,10 @@ const MARKET_EVENTS = [
 
 const INITIAL_GAME_STATE = {
   phase: 9,
-  step: '9.1',
-  stepIndex: 1,
+  step: '9.2',
+  stepIndex: 2,
   phaseStepTotal: 3,
-  stepName: '战绩分享文案',
+  stepName: '发布页与移动端落地',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -514,7 +514,7 @@ function updateSaveStatus(text) {
 
 function getSerializableGameState() {
   return {
-    version: 12,
+    version: 13,
     savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,
@@ -1232,6 +1232,10 @@ function bindPlayerActions() {
   document.querySelector('#logToggle').addEventListener('click', () => { playSound('click'); openLog(); });
   document.querySelector('#soundToggle').addEventListener('click', toggleSound);
   document.querySelector('#tutorialReplayButton').addEventListener('click', () => { playSound('click'); openTutorial(); });
+  document.querySelector('#startPlayButton')?.addEventListener('click', () => {
+    playSound('click');
+    document.querySelector('#stageTitle')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
   document.querySelector('#copyShareButton').addEventListener('click', copyShareText);
   document.querySelector('#copyResultButton').addEventListener('click', copyShareText);
   document.querySelector('#tutorialSkipButton').addEventListener('click', () => closeTutorial(true));

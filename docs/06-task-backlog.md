@@ -241,7 +241,7 @@
 
 ## 当前推荐下一步
 
-当前推荐下一步：阶段 9 已启动，Step 9.1 战绩分享文案已完成。下一步建议部署 GitHub Pages / Netlify，或继续 Step 9.2 做发布页与移动端落地优化。
+当前推荐下一步：阶段 9 已推进到 Step 9.2，发布页与移动端落地优化已完成。下一步建议继续 Step 9.3 试玩反馈收集方案，或部署 GitHub Pages / Netlify。
 
 
 ## 阶段 7：体验增强
@@ -338,8 +338,8 @@
   - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：挑战结束后生成可复制战绩文案，包含称号、现金、最终资产、成交统计和最佳捡漏
   - 步骤位置：阶段 9 / Step 9.1（1/3）
-- [ ] Step 9.2 发布页与移动端落地
-  - 文件：`src/index.html`, `src/styles.css`, `README.md`
+- [x] Step 9.2 发布页与移动端落地
+  - 文件：`src/index.html`, `src/styles.css`, `src/main.js`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：首页/README 更适合外部试玩入口，移动端首屏更像可直接开始的小游戏
   - 步骤位置：阶段 9 / Step 9.2（2/3）
 - [ ] Step 9.3 试玩反馈收集方案
@@ -373,5 +373,36 @@
 
 - 7 天结束后结算页应出现“战绩分享”卡和只读分享文案
 - 点击“复制战绩”应复制分享文案；未结算时点击应提示“打完一局后会生成战绩”
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+
+
+### Step 9.2 发布页与移动端落地
+
+步骤位置：阶段 9 / Step 9.2（2/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/styles.css`
+- `src/main.js`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 首页新增外部试玩入口式 Hero：直接说明 7 天现金目标、起始本金和核心玩法
+- 增加 30 件拍品、3 位对手、一局约 8 分钟的轻量卖点，减少初次打开的信息判断成本
+- 新增“开始捡漏”主按钮，点击后平滑滚动到拍卖主舞台
+- 新增 3 步快速玩法卡片：看货、出手、变现
+- 移动端下发布区改为单列，首屏更像可直接开始的小游戏入口
+- 存档 key 升到 `kelly-king-save-v13`，同步当前阶段标记到 9.2
+
+验证方式：
+
+- 首屏应先看到明确目标、玩法卖点和“开始捡漏”按钮
+- 点击“开始捡漏”应滚动到拍卖主舞台，不影响自动存档与教程
+- 手机窄屏下 Hero、快速玩法、状态栏都应单列可读
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
