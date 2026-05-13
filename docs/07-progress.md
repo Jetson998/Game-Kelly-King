@@ -1020,3 +1020,36 @@
 ### 下一步
 
 建议继续部署 GitHub Pages / Netlify，或进入阶段 10：根据真实试玩反馈修正流程、数值和移动端细节。
+
+### Step 10.1 出价止损线提示
+
+步骤位置：阶段 10 / Step 10.1（1/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 阶段 10 启动，先处理试玩中最容易出现的“我不知道该追到多少钱”的决策卡点。
+- 拍品区新增“出价止损线”，放在拍品标签和三条判断提示之间。
+- 止损线基于模糊估值、风险词、稀有度、今日热点和当前现金计算，仍不暴露真实价值。
+- 当前价低于、接近、超过止损线时分别显示安全、警告、收手三种提示。
+- 存档 key 升到 `kelly-king-save-v15`，当前阶段标记更新到 10.1。
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地页面应包含“止损线”，并能正常加载。
+
+下一步建议：
+
+```text
+阶段 10 / Step 10.2（2/3）移动端压缩模式，或部署 GitHub Pages / Netlify 收集真实试玩反馈。
+```

@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v14';
+const STORAGE_KEY = 'kelly-king-save-v15';
 const TUTORIAL_KEY = 'kelly-king-tutorial-seen-v1';
 const MAX_LOG_ENTRIES = 80;
 
@@ -54,11 +54,11 @@ const MARKET_EVENTS = [
 ];
 
 const INITIAL_GAME_STATE = {
-  phase: 9,
-  step: '9.3',
-  stepIndex: 3,
+  phase: 10,
+  step: '10.1',
+  stepIndex: 1,
   phaseStepTotal: 3,
-  stepName: '试玩反馈收集方案',
+  stepName: '出价止损线提示',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -211,6 +211,62 @@ function getMarketReport(category) {
   return reports[category] ?? `${category} 今天更受关注，报价和竞价都会更激进。`;
 }
 
+function getRiskLevel(item) {
+  const riskText = `${item.risk} ${item.tags.join(' ')}`;
+  if (/仿品|暗病|故障|鼓包|来源不明|返修|受潮|临期|高风险|砸手|故事/.test(riskText)) return 'high';
+  if (/未知|维修|缺失|难卖|压库存|渠道|瑕疵/.test(riskText)) return 'medium';
+  return 'low';
+}
+
+function getSuggestedStopPrice(item) {
+  const riskLevel = getRiskLevel(item);
+  const hotBonus = item.category === gameState.hotCategory ? 1.08 : 1;
+  const rarityBonus = item.rarity === 'epic' ? 1.08 : item.rarity === 'rare' ? 1.04 : 1;
+  const riskPenalty = riskLevel === 'high' ? 0.72 : riskLevel === 'medium' ? 0.88 : 1;
+  const estimateAnchor = item.estimateMin * 0.35 + item.estimateMax * 0.65;
+  const rawStop = estimateAnchor * hotBonus * rarityBonus * riskPenalty;
+  const cappedStop = Math.min(rawStop, item.estimateMax * 1.08, gameState.cash);
+  return Math.max(item.startPrice, Math.round(cappedStop / 10) * 10);
+}
+
+function getDecisionSummary(item) {
+  const stopPrice = getSuggestedStopPrice(item);
+  const riskLevel = getRiskLevel(item);
+  const margin = stopPrice - gameState.currentPrice;
+  const riskLabel = riskLevel === 'high' ? '风险偏高' : riskLevel === 'medium' ? '风险中等' : '风险较低';
+  const hotText = item.category === gameState.hotCategory ? '今日热点，卖出更顺' : '非热点，别久压库存';
+
+  if (margin <= 0) {
+    return {
+      tone: 'danger',
+      title: `止损线：${formatCurrency(stopPrice)}`,
+      text: `当前价已经压到线边。${riskLabel}，${hotText}，除非你很确定，否则收手。`,
+    };
+  }
+
+  if (margin <= 120) {
+    return {
+      tone: 'warning',
+      title: `止损线：${formatCurrency(stopPrice)}`,
+      text: `还能跟约 ${formatCurrency(margin)}。${riskLabel}，建议只小口试探，别强抢。`,
+    };
+  }
+
+  return {
+    tone: 'safe',
+    title: `止损线：${formatCurrency(stopPrice)}`,
+    text: `离止损线还有 ${formatCurrency(margin)}。${riskLabel}，${hotText}，可以看对手反应再决定。`,
+  };
+}
+
+function renderDecisionSummary(item) {
+  const node = document.querySelector('#decisionSummary');
+  if (!node) return;
+  const summary = getDecisionSummary(item);
+  node.className = `decision-summary ${summary.tone}`;
+  node.innerHTML = `<strong>${summary.title}</strong><span>${summary.text}</span>`;
+}
+
 function getPricePositionText(item) {
   if (gameState.currentPrice < item.estimateMin) {
     return '价格低：可以试探';
@@ -259,6 +315,7 @@ function renderItem(item) {
     ...(isHot ? [{ text: '今日热点', className: 'hot-tag' }] : []),
   ].map((tag) => `<span class="${tag.className ?? ''}">${tag.text}</span>`).join('');
   renderDecisionHints(item);
+  renderDecisionSummary(item);
 }
 
 function getNpcPressureLevel(npc) {
@@ -514,7 +571,7 @@ function updateSaveStatus(text) {
 
 function getSerializableGameState() {
   return {
-    version: 13,
+    version: 15,
     savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,
@@ -709,7 +766,10 @@ function renderState() {
   }
   renderWealthProgress();
   updateSaveStatus(gameState.saveStatus);
-  if (gameState.currentItem) renderDecisionHints(gameState.currentItem);
+  if (gameState.currentItem) {
+    renderDecisionHints(gameState.currentItem);
+    renderDecisionSummary(gameState.currentItem);
+  }
   renderNpcs();
   renderInventory();
   renderRecentEvent();

@@ -241,7 +241,7 @@
 
 ## 当前推荐下一步
 
-当前推荐下一步：阶段 9 已完成。下一步建议部署 GitHub Pages / Netlify，或进入阶段 10 做试玩反馈后的迭代修正。
+当前推荐下一步：阶段 10 已启动。下一步建议继续 Step 10.2 移动端压缩模式，或部署 GitHub Pages / Netlify 收集真实反馈。
 
 
 ## 阶段 7：体验增强
@@ -433,5 +433,50 @@
 
 - 首页应出现“试玩反馈”和“复制反馈模板”。
 - 点击“复制反馈模板”应提示“反馈模板已复制”，模板包含当前试玩进度。
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+
+
+## 阶段 10：试玩反馈后迭代
+
+- [x] Step 10.1 出价止损线提示
+  - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 验收：拍品区显示根据估值、风险、热点和当前现金计算出的止损线；当前价接近或超过止损线时给出更明确的收手提醒
+  - 步骤位置：阶段 10 / Step 10.1（1/3）
+- [ ] Step 10.2 移动端压缩模式
+  - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 验收：小屏首屏进一步减少滚动成本，核心状态、拍品、止损线和主按钮更快进入视野
+  - 步骤位置：阶段 10 / Step 10.2（2/3）
+- [ ] Step 10.3 首轮数值微调
+  - 文件：`src/main.js`, `src/auction.js`, `src/data/npcs.js`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 验收：根据试玩目标调整现金目标、出价跨度、NPC 激进度和出售倍率，让 7 天挑战更接近“差一点就能赢”的节奏
+  - 步骤位置：阶段 10 / Step 10.3（3/3）
+
+### Step 10.1 出价止损线提示
+
+步骤位置：阶段 10 / Step 10.1（1/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 拍品标签和三条判断提示之间新增“出价止损线”卡片。
+- 止损线根据估值区间、风险词、稀有度、今日热点和当前现金动态计算，不直接剧透真实价值。
+- 当前价低于止损线时提示还能跟多少；接近止损线时提醒小口试探；超过止损线时明确建议收手。
+- 高风险词如仿品、暗病、故障、受潮、返修、来源不明会压低止损线，避免玩家被大估值带着强抢。
+- 存档 key 升到 `kelly-king-save-v15`，阶段标记更新到 10.1。
+
+验证方式：
+
+- 页面应显示“止损线”。
+- 加价后止损线余量提示应随当前价更新。
+- 高风险拍品的止损线应明显更保守。
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
