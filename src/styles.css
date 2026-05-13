@@ -238,14 +238,29 @@ h3 {
   font-size: 0.9rem;
 }
 
+.auction-footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 14px;
+}
+
 .save-status {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  margin: 0;
   padding: 8px 12px;
   border: 1px solid rgba(104, 211, 145, 0.22);
   border-radius: 999px;
   background: rgba(104, 211, 145, 0.08);
+}
+
+.restart-mini-button {
+  padding: 0.7rem 0.95rem;
+  font-size: 0.88rem;
 }
 
 .save-status span {
@@ -337,8 +352,17 @@ h3 {
     min-height: 120px;
   }
 
-  .inventory-list li {
+  .inventory-list li,
+  .auction-footer-row {
     grid-template-columns: 1fr;
+  }
+
+  .auction-footer-row {
+    align-items: stretch;
+  }
+
+  .restart-mini-button {
+    width: 100%;
   }
 }
 

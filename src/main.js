@@ -15,11 +15,11 @@ const BALANCE_CONFIG = {
 };
 
 const INITIAL_GAME_STATE = {
-  phase: 4,
-  step: '4.3',
-  stepIndex: 3,
-  phaseStepTotal: 3,
-  stepName: 'localStorage 存档',
+  phase: 5,
+  step: '5.1',
+  stepIndex: 1,
+  phaseStepTotal: 2,
+  stepName: '浏览器试玩与问题修复',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -42,7 +42,7 @@ const INITIAL_GAME_STATE = {
   saveStatus: '尚未保存',
   logs: [
     '欢迎来到跳蚤市场，第一件拍品已经上台。',
-    '当前步骤：阶段 4 / Step 4.3（3/3）localStorage 存档。',
+    '当前步骤：阶段 5 / Step 5.1（1/2）浏览器试玩与问题修复。',,
   ],
 };
 
@@ -344,6 +344,8 @@ function updateSaveStatus(text) {
 
 function getSerializableGameState() {
   return {
+    version: 1,
+    savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,
     stepIndex: gameState.stepIndex,
@@ -382,7 +384,22 @@ function saveGame() {
   }
 }
 
+function isValidSaveData(saveData) {
+  return Boolean(
+    saveData
+    && typeof saveData === 'object'
+    && Number.isFinite(saveData.day)
+    && Number.isFinite(saveData.cash)
+    && Array.isArray(saveData.inventory)
+    && Array.isArray(saveData.logs)
+  );
+}
+
 function hydrateSaveData(saveData) {
+  if (!isValidSaveData(saveData)) {
+    throw new Error('存档缺少必要字段');
+  }
+
   return {
     ...createInitialGameState(),
     ...saveData,
@@ -734,7 +751,9 @@ function bindPlayerActions() {
 
   document.querySelector('#passButton').addEventListener('click', passCurrentItem);
   document.querySelector('#nextItemButton').addEventListener('click', loadNextItem);
-  document.querySelector('#restartButton').addEventListener('click', resetGame);
+  document.querySelectorAll('[data-restart-game]').forEach((button) => {
+    button.addEventListener('click', resetGame);
+  });
   document.querySelector('#inventoryList').addEventListener('click', (event) => {
     const sellButton = event.target.closest('[data-sell-index]');
     if (!sellButton) {
