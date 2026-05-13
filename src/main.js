@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v11';
+const STORAGE_KEY = 'kelly-king-save-v12';
 const TUTORIAL_KEY = 'kelly-king-tutorial-seen-v1';
 const MAX_LOG_ENTRIES = 80;
 
@@ -54,11 +54,11 @@ const MARKET_EVENTS = [
 ];
 
 const INITIAL_GAME_STATE = {
-  phase: 8,
-  step: '8.3',
-  stepIndex: 3,
+  phase: 9,
+  step: '9.1',
+  stepIndex: 1,
   phaseStepTotal: 3,
-  stepName: '首局节奏保护',
+  stepName: '战绩分享文案',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -514,7 +514,7 @@ function updateSaveStatus(text) {
 
 function getSerializableGameState() {
   return {
-    version: 11,
+    version: 12,
     savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,
@@ -1076,6 +1076,41 @@ function getStrategyAdvice(records, recap, finalAssets, isWin) {
   return advice.slice(0, 4);
 }
 
+function getShareLines(recap, finalAssets, isWin) {
+  const bestProfit = recap.bestBargain ? recap.bestBargain.appraisalProfit : 0;
+  const bestLine = recap.bestBargain
+    ? `最佳捡漏：${recap.bestBargain.item.name}，账面${bestProfit >= 0 ? '赚' : '亏'} ${formatCurrency(Math.abs(bestProfit))}`
+    : '最佳捡漏：还没出手，江湖路刚开始';
+  const cashLine = isWin
+    ? `现金过线 ${formatCurrency(gameState.cash)}，挑战成功。`
+    : `现金 ${formatCurrency(gameState.cash)}，离目标还差 ${formatCurrency(Math.max(gameState.targetCash - gameState.cash, 0))}。`;
+
+  return [
+    '我刚打完一局《捡漏之王》',
+    `称号：${recap.title}`,
+    cashLine,
+    `最终资产：${formatCurrency(finalAssets)} · 成交 ${recap.boughtCount} 单 · 已变现 ${recap.soldCount} 单`,
+    bestLine,
+    '7 天流动拍场，别上头，现金为王。',
+  ];
+}
+
+function renderShareBlock(recap, finalAssets, isWin) {
+  const shareLines = getShareLines(recap, finalAssets, isWin);
+  return `
+    <section class="share-block" aria-label="战绩分享">
+      <div class="section-mini-title">
+        <strong>战绩分享</strong>
+        <span>可截图或复制给朋友看</span>
+      </div>
+      <div class="share-card">
+        ${shareLines.map((line, index) => index === 0 ? `<strong>${line}</strong>` : `<span>${line}</span>`).join('')}
+      </div>
+      <textarea id="shareText" class="share-text" readonly>${shareLines.join('\n')}</textarea>
+    </section>
+  `;
+}
+
 function renderStrategyAdvice(advice) {
   return `
     <section class="strategy-advice" aria-label="下局建议">
@@ -1124,6 +1159,7 @@ function renderGameResult() {
       ${renderRecordCard(recap.worstMistake, '还没有最亏打眼')}
     </section>
     ${renderStrategyAdvice(strategyAdvice)}
+    ${renderShareBlock(recap, finalAssets, isWin)}
   `;
   return { finalAssets };
 }
@@ -1153,6 +1189,29 @@ function resetGame() {
   addLog('对手已入场。加价后，他们会决定是否跟。');
 }
 
+async function copyShareText() {
+  const shareText = document.querySelector('#shareText')?.value;
+  if (!shareText) {
+    showToast('打完一局后会生成战绩', 'warning');
+    return;
+  }
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareText);
+    } else {
+      const node = document.querySelector('#shareText');
+      node.focus();
+      node.select();
+      document.execCommand('copy');
+    }
+    playSound('success');
+    showToast('战绩已复制', 'success');
+  } catch (error) {
+    console.error('复制战绩失败', error);
+    showToast('复制失败，可以手动选中文案', 'warning');
+  }
+}
+
 function bindPlayerActions() {
   document.querySelectorAll('[data-bid-amount]').forEach((button) => {
     button.addEventListener('click', () => placePlayerBid(Number(button.dataset.bidAmount)));
@@ -1173,6 +1232,8 @@ function bindPlayerActions() {
   document.querySelector('#logToggle').addEventListener('click', () => { playSound('click'); openLog(); });
   document.querySelector('#soundToggle').addEventListener('click', toggleSound);
   document.querySelector('#tutorialReplayButton').addEventListener('click', () => { playSound('click'); openTutorial(); });
+  document.querySelector('#copyShareButton').addEventListener('click', copyShareText);
+  document.querySelector('#copyResultButton').addEventListener('click', copyShareText);
   document.querySelector('#tutorialSkipButton').addEventListener('click', () => closeTutorial(true));
   document.querySelector('#tutorialPrevButton').addEventListener('click', () => { tutorialStep = Math.max(0, tutorialStep - 1); renderTutorialStep(); });
   document.querySelector('#tutorialNextButton').addEventListener('click', () => {

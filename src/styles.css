@@ -517,7 +517,8 @@ dd { margin: 5px 0 0; font-size: 1.08rem; font-weight: 900; }
 .recap-card.bad { border-color: rgba(252, 129, 129, 0.25); background: rgba(252, 129, 129, 0.09); }
 .recap-card.muted-card { opacity: 0.72; }
 
-.strategy-advice {
+.strategy-advice,
+.share-block {
   margin-top: 14px;
   padding: 16px;
   border: 1px solid rgba(247, 189, 75, 0.22);
@@ -533,6 +534,42 @@ dd { margin: 5px 0 0; font-size: 1.08rem; font-weight: 900; }
 .strategy-advice li {
   color: rgba(244, 239, 229, 0.92);
   line-height: 1.55;
+}
+.share-block {
+  display: grid;
+  gap: 12px;
+}
+.share-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px dashed rgba(247, 189, 75, 0.34);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(247, 189, 75, 0.12), rgba(255, 255, 255, 0.05));
+}
+.share-card strong {
+  color: var(--gold);
+  font-size: 1.08rem;
+}
+.share-card span {
+  color: rgba(244, 239, 229, 0.9);
+  line-height: 1.45;
+}
+.share-text {
+  width: 100%;
+  min-height: 132px;
+  resize: vertical;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--text);
+  background: rgba(0, 0, 0, 0.18);
+  font: inherit;
+  line-height: 1.55;
+}
+.result-panel > button {
+  margin-top: 12px;
+  margin-right: 8px;
 }
 
 .price-bump {

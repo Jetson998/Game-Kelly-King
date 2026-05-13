@@ -241,7 +241,7 @@
 
 ## 当前推荐下一步
 
-当前推荐下一步：阶段 8 / Step 8.3 首局节奏保护已完成。下一步建议部署 GitHub Pages / Netlify，或进入阶段 9 做发布页、分享图与试玩反馈收集。
+当前推荐下一步：阶段 9 已启动，Step 9.1 战绩分享文案已完成。下一步建议部署 GitHub Pages / Netlify，或继续 Step 9.2 做发布页与移动端落地优化。
 
 
 ## 阶段 7：体验增强
@@ -329,5 +329,49 @@
 - 首次进入或点击设置里的“新手引导”，三步教程应依次高亮状态栏、判断提示、底部主操作区
 - 点击上一步/下一步，高亮区域应跟随切换
 - 跳过或开始拍卖后，高亮与遮罩应消失
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+
+## 阶段 9：发布与传播体验
+
+- [x] Step 9.1 战绩分享文案
+  - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 验收：挑战结束后生成可复制战绩文案，包含称号、现金、最终资产、成交统计和最佳捡漏
+  - 步骤位置：阶段 9 / Step 9.1（1/3）
+- [ ] Step 9.2 发布页与移动端落地
+  - 文件：`src/index.html`, `src/styles.css`, `README.md`
+  - 验收：首页/README 更适合外部试玩入口，移动端首屏更像可直接开始的小游戏
+  - 步骤位置：阶段 9 / Step 9.2（2/3）
+- [ ] Step 9.3 试玩反馈收集方案
+  - 文件：`README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 验收：整理试玩反馈问题清单与下一轮迭代方向
+  - 步骤位置：阶段 9 / Step 9.3（3/3）
+
+
+### Step 9.1 战绩分享文案
+
+步骤位置：阶段 9 / Step 9.1（1/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 结算页新增“战绩分享”卡，自动生成适合截图/转发的短文案
+- 分享文案包含本局称号、最终现金、最终资产、成交数、已变现数和最佳捡漏
+- 设置菜单与结算页新增“复制战绩”按钮；未结算时会提示先打完一局
+- 复制优先使用 Clipboard API，并保留 textarea 手动复制兜底
+- 存档 key 升到 `kelly-king-save-v12`，当前阶段标记更新到 9.1
+
+验证方式：
+
+- 7 天结束后结算页应出现“战绩分享”卡和只读分享文案
+- 点击“复制战绩”应复制分享文案；未结算时点击应提示“打完一局后会生成战绩”
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`

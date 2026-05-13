@@ -932,3 +932,32 @@
 - 新开一局，第 1-2 件应从教学候选池中出现；第 3 件后恢复普通随机池。
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
+
+### Step 9.1 战绩分享文案
+
+步骤位置：阶段 9 / Step 9.1（1/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 阶段推进到发布与传播体验，先补挑战结束后的战绩分享闭环。
+- 结算页新增“战绩分享”卡，生成可截图或复制的短文案。
+- 分享文案包含称号、最终现金、最终资产、成交数、已变现数和最佳捡漏。
+- 设置菜单与结算页新增“复制战绩”按钮；未完成一局时会提示打完后再复制。
+- 复制优先使用 Clipboard API，失败时可直接手动选中只读 textarea。
+- 存档 key 升到 `kelly-king-save-v12`，当前阶段标记更新到 9.1。
+
+验证方式：
+
+- 7 天结束后结算页出现战绩分享卡与分享 textarea。
+- 未结算时复制按钮不会报错，会提示“打完一局后会生成战绩”。
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
