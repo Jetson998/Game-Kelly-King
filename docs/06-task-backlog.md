@@ -245,7 +245,7 @@
 
 ## 当前推荐下一步
 
-阶段 7 / Step 7.2：落槌与成交动画；或先做 GitHub Pages / Netlify 发布部署。
+阶段 7 / Step 7.3：音效开关；或先做 GitHub Pages / Netlify 发布部署。
 
 
 ## 阶段 7：体验增强
@@ -254,7 +254,9 @@
   - 文件：`src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：挑战结束后根据现金、资产、库存、打眼次数和热点利用情况给出下局建议
   - 步骤位置：阶段 7 / Step 7.1（1/3）
-- [ ] Step 7.2 落槌与成交动画
-  - 验收：竞价、落槌、成交、结算有轻量视觉反馈，不影响低端手机性能
+- [x] Step 7.2 落槌与成交动画
+  - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 验收：竞价、收手、落槌、成交、流拍和变现有轻量视觉反馈，并尊重 `prefers-reduced-motion`
+  - 步骤位置：阶段 7 / Step 7.2（2/3）
 - [ ] Step 7.3 音效开关
   - 验收：提供可关闭的点击、加价、落槌、结算音效

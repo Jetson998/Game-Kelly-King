@@ -535,6 +535,106 @@ dd { margin: 5px 0 0; font-size: 1.08rem; font-weight: 900; }
   line-height: 1.55;
 }
 
+.price-bump {
+  animation: priceBump 0.38s ease-out;
+}
+.stage-pulse-bid {
+  animation: stageBidPulse 0.42s ease-out;
+}
+.stage-pulse-success {
+  animation: stageSuccessPulse 0.72s ease-out;
+}
+.stage-pulse-warning {
+  animation: stageWarningPulse 0.72s ease-out;
+}
+.auction-view[data-motion="hammer"] .lot-card {
+  animation: hammerDrop 0.56s cubic-bezier(0.2, 0.9, 0.25, 1.2);
+}
+.auction-view[data-motion="pass"] .lot-card {
+  animation: passFade 0.42s ease-out;
+}
+.primary-actions.action-locked {
+  animation: actionLock 0.5s ease-out;
+}
+.action-toast {
+  margin-bottom: 12px;
+  padding: 11px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text);
+  font-weight: 900;
+  text-align: center;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+}
+.action-toast.success {
+  border-color: rgba(104, 211, 145, 0.34);
+  background: rgba(104, 211, 145, 0.15);
+}
+.action-toast.warning {
+  border-color: rgba(247, 189, 75, 0.36);
+  background: rgba(247, 189, 75, 0.13);
+}
+.action-toast.bid {
+  border-color: rgba(247, 189, 75, 0.34);
+}
+.toast-pop {
+  animation: toastPop 0.34s ease-out;
+}
+
+@keyframes priceBump {
+  0% { transform: scale(1); box-shadow: none; }
+  42% { transform: scale(1.055); box-shadow: 0 0 0 6px rgba(247, 189, 75, 0.13); }
+  100% { transform: scale(1); box-shadow: none; }
+}
+@keyframes stageBidPulse {
+  0% { box-shadow: var(--shadow); }
+  45% { box-shadow: 0 22px 70px rgba(247, 189, 75, 0.18); }
+  100% { box-shadow: var(--shadow); }
+}
+@keyframes stageSuccessPulse {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-3px); box-shadow: 0 26px 80px rgba(104, 211, 145, 0.18); }
+  100% { transform: translateY(0); }
+}
+@keyframes stageWarningPulse {
+  0% { transform: translateY(0); }
+  35% { transform: translateY(2px); box-shadow: 0 26px 80px rgba(252, 129, 129, 0.14); }
+  100% { transform: translateY(0); }
+}
+@keyframes hammerDrop {
+  0% { transform: translateY(-5px) scale(1.005); filter: brightness(1.06); }
+  45% { transform: translateY(4px) scale(0.996); filter: brightness(1.16); }
+  100% { transform: translateY(0) scale(1); filter: brightness(1); }
+}
+@keyframes passFade {
+  0% { opacity: 1; }
+  45% { opacity: 0.72; }
+  100% { opacity: 1; }
+}
+@keyframes actionLock {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(2px); }
+  100% { transform: translateY(0); }
+}
+@keyframes toastPop {
+  0% { opacity: 0; transform: translateY(8px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .price-bump,
+  .stage-pulse-bid,
+  .stage-pulse-success,
+  .stage-pulse-warning,
+  .toast-pop,
+  .auction-view[data-motion="hammer"] .lot-card,
+  .auction-view[data-motion="pass"] .lot-card,
+  .primary-actions.action-locked {
+    animation: none !important;
+  }
+}
+
 @media (max-width: 760px) {
   .app-shell { width: min(100% - 20px, 980px); padding-top: 16px; }
   .topbar { align-items: flex-start; }

@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v7';
+const STORAGE_KEY = 'kelly-king-save-v8';
 const MAX_LOG_ENTRIES = 80;
 
 const BALANCE_CONFIG = {
@@ -53,11 +53,11 @@ const MARKET_EVENTS = [
 ];
 
 const INITIAL_GAME_STATE = {
-  phase: 6,
-  step: '7.1',
-  stepIndex: 1,
+  phase: 7,
+  step: '7.2',
+  stepIndex: 2,
   phaseStepTotal: 3,
-  stepName: '复盘策略建议',
+  stepName: '落槌与成交动画',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -286,6 +286,43 @@ function renderRecentEvent() {
   document.querySelector('#recentEventText').textContent = gameState.logs.at(-1) ?? '第一件货已经上台。';
 }
 
+function restartAnimation(node, className) {
+  if (!node) return;
+  node.classList.remove(className);
+  // Force reflow so repeated bids can replay the same CSS animation.
+  void node.offsetWidth;
+  node.classList.add(className);
+}
+
+function playStagePulse(type = 'bid') {
+  const stage = document.querySelector('.stage-card');
+  restartAnimation(stage, `stage-pulse-${type}`);
+}
+
+function playPriceBump() {
+  restartAnimation(document.querySelector('.price-board'), 'price-bump');
+}
+
+function showToast(text, type = 'info') {
+  const toast = document.querySelector('#actionToast');
+  if (!toast) return;
+  toast.textContent = text;
+  toast.className = `action-toast ${type}`;
+  toast.hidden = false;
+  restartAnimation(toast, 'toast-pop');
+  window.clearTimeout(showToast.timer);
+  showToast.timer = window.setTimeout(() => { toast.hidden = true; }, 1900);
+}
+
+function updateAuctionMotion(state = 'idle') {
+  const auctionView = document.querySelector('#auctionView');
+  if (auctionView) auctionView.dataset.motion = state;
+}
+
+function updateActionLock(locked) {
+  document.querySelector('.primary-actions')?.classList.toggle('action-locked', locked);
+}
+
 function updateSaveStatus(text) {
   gameState.saveStatus = text;
   const node = document.querySelector('#saveStatusText');
@@ -294,7 +331,7 @@ function updateSaveStatus(text) {
 
 function getSerializableGameState() {
   return {
-    version: 7,
+    version: 8,
     savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,
@@ -499,6 +536,9 @@ function settleAuction() {
   if (gameState.settlementDone) return;
   gameState.settlementDone = true;
 
+  updateAuctionMotion('hammer');
+  updateActionLock(true);
+
   if (gameState.leader === '你') {
     const entry = {
       item: gameState.currentItem,
@@ -506,12 +546,18 @@ function settleAuction() {
       salePrice: calculateSalePrice(gameState.currentItem),
     };
     gameState.pendingSettlement = { type: 'won', entry, price: gameState.currentPrice, item: gameState.currentItem, winner: '你' };
+    showToast(`落槌成交：你拍下 ${gameState.currentItem.name}`, 'success');
+    playStagePulse('success');
     addLog(`落槌！你以 ${formatCurrency(gameState.currentPrice)} 拍下「${gameState.currentItem.name}」。`);
   } else if (gameState.leader !== '暂无') {
     gameState.pendingSettlement = { type: 'lost', winner: gameState.leader, price: gameState.currentPrice, item: gameState.currentItem };
+    showToast(`落槌：${gameState.leader} 拍走了`, 'warning');
+    playStagePulse('warning');
     addLog(`落槌！${gameState.leader} 以 ${formatCurrency(gameState.currentPrice)} 拍走「${gameState.currentItem.name}」。`);
   } else {
     gameState.pendingSettlement = { type: 'lost', winner: '无人', price: gameState.currentPrice, item: gameState.currentItem };
+    showToast('流拍：没人接手', 'warning');
+    playStagePulse('warning');
     addLog(`流拍：「${gameState.currentItem.name}」没人拿下。`);
   }
 }
@@ -547,6 +593,9 @@ function runNpcBiddingRound() {
     }
     gameState.currentPrice = decision.nextPrice;
     gameState.leader = npc.name;
+    playPriceBump();
+    playStagePulse('bid');
+    showToast(`${npc.name} 加价到 ${formatCurrency(gameState.currentPrice)}`, 'bid');
     addLog(`${npc.name} ${decision.reason}，加价到 ${formatCurrency(gameState.currentPrice)}。`);
   }
   maybeEndAuction();
@@ -568,6 +617,10 @@ function placePlayerBid(increment) {
   }
   gameState.currentPrice = nextPrice;
   gameState.leader = '你';
+  updateAuctionMotion('bid');
+  playPriceBump();
+  playStagePulse('bid');
+  showToast(`你加价到 ${formatCurrency(gameState.currentPrice)}`, 'bid');
   addLog(`你加价 ${formatCurrency(increment)}，当前价 ${formatCurrency(gameState.currentPrice)}。`);
   renderState();
   runNpcBiddingRound();
@@ -576,6 +629,8 @@ function placePlayerBid(increment) {
 function passCurrentItem() {
   if (gameState.auctionEnded || gameState.gameOver) return;
   gameState.hasPassed = true;
+  showToast('收手观望', 'warning');
+  updateAuctionMotion('pass');
   addLog(`你收手，不追「${gameState.currentItem.name}」。`);
   runNpcBiddingRound();
   if (!gameState.auctionEnded) {
@@ -586,6 +641,7 @@ function passCurrentItem() {
 }
 
 function finishSettlement() {
+  updateActionLock(false);
   gameState.pendingSettlement = null;
   if (gameState.day === gameState.totalDays && gameState.lotsSeenToday >= gameState.lotsPerDay) {
     endGame();
@@ -601,6 +657,7 @@ function sellPendingNow() {
   const netCashChange = entry.salePrice - entry.purchasePrice;
   gameState.cash += netCashChange;
   gameState.dealHistory.push(createDealRecord(entry, 'sold-now'));
+  showToast(getSaleProfitText(entry), getSaleProfitClass(entry) === 'loss' ? 'warning' : 'success');
   addLog(`立即卖出「${entry.item.name}」：成交扣款 ${formatCurrency(entry.purchasePrice)}，卖出收入 ${formatCurrency(entry.salePrice)}，${getSaleProfitText(entry)}。`);
   finishSettlement();
 }
@@ -623,6 +680,7 @@ function keepPendingItem() {
   entry.dealId = record.id;
   gameState.dealHistory.push(record);
   gameState.inventory.push(entry);
+  showToast('已放入库存', 'success');
   addLog(`放入库存：「${entry.item.name}」。现金扣除 ${formatCurrency(entry.purchasePrice)}。`);
   finishSettlement();
 }
@@ -682,6 +740,8 @@ function loadNextItem() {
   gameState.auctionEnded = false;
   gameState.settlementDone = false;
   gameState.pendingSettlement = null;
+  updateAuctionMotion('idle');
+  updateActionLock(false);
 
   renderItem(gameState.currentItem);
   renderState();

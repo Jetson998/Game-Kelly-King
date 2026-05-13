@@ -786,3 +786,33 @@
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
 - VM smoke test：构造复盘记录后应能生成策略建议 HTML
+
+
+### Step 7.2 落槌与成交动画
+
+步骤位置：阶段 7 / Step 7.2（2/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 新增操作提示条 `actionToast`，用于加价、收手、落槌、成交、流拍、变现和入库反馈
+- 加价时价格板弹跳，舞台轻微高亮
+- 落槌/成交/流拍时舞台卡片产生短动画，强化回合结束感
+- 处理成交时短暂锁定主操作区视觉状态，减少“点了没反应”的错觉
+- 支持 `prefers-reduced-motion: reduce`，系统要求减少动态效果时关闭动画
+- 存档 key 升到 `kelly-king-save-v8`
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地静态页面 `curl` 检查
+- VM smoke test：动画辅助函数可在模拟 DOM 下调用
