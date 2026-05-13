@@ -531,8 +531,9 @@ function finishSettlement() {
 function sellPendingNow() {
   const entry = gameState.pendingSettlement?.entry;
   if (!entry) return;
-  gameState.cash += entry.salePrice;
-  addLog(`立即卖出「${entry.item.name}」，收入 ${formatCurrency(entry.salePrice)}，${getSaleProfitText(entry)}。`);
+  const netCashChange = entry.salePrice - entry.purchasePrice;
+  gameState.cash += netCashChange;
+  addLog(`立即卖出「${entry.item.name}」：成交扣款 ${formatCurrency(entry.purchasePrice)}，卖出收入 ${formatCurrency(entry.salePrice)}，${getSaleProfitText(entry)}。`);
   finishSettlement();
 }
 
@@ -681,9 +682,7 @@ function bindPlayerActions() {
   document.querySelector('#nextItemButton').addEventListener('click', finishSettlement);
   document.querySelectorAll('[data-restart-game]').forEach((button) => button.addEventListener('click', resetGame));
   document.querySelector('#inventoryToggle').addEventListener('click', openInventory);
-  document.querySelectorAll('[data-open-inventory]').forEach((button) => button.addEventListener('click', openInventory));
   document.querySelector('#logToggle').addEventListener('click', openLog);
-  document.querySelectorAll('[data-open-log]').forEach((button) => button.addEventListener('click', openLog));
   document.querySelector('#inventoryClose').addEventListener('click', () => { document.querySelector('#inventoryDrawer').hidden = true; });
   document.querySelector('#inventoryDrawer').addEventListener('click', (event) => {
     if (event.target.id === 'inventoryDrawer') document.querySelector('#inventoryDrawer').hidden = true;
