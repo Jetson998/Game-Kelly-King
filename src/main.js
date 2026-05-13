@@ -19,7 +19,7 @@ const INITIAL_GAME_STATE = {
   step: '5.2',
   stepIndex: 2,
   phaseStepTotal: 3,
-  stepName: '页面体验与移动端适配',
+  stepName: '操作清晰度优化',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -107,19 +107,19 @@ function getMarketReport(category) {
 
 function renderStepStatus() {
   document.querySelector('#stepText').textContent = `第 ${gameState.lotsSeenToday || 1}/${gameState.lotsPerDay} 件`;
-  document.querySelector('#stepHint').textContent = `提示：现金目标 ${formatCurrency(gameState.targetCash)}；放弃不扣钱，拍下后会显示真实价值。`;
+  document.querySelector('#stepHint').textContent = '看上方建议，点下方大按钮。黄色=加价，灰色=收手/下一件。';
 }
 
 function getPricePositionText(item) {
   if (gameState.currentPrice < item.estimateMin) {
-    return '价格位置：低于估值下沿，可观察';
+    return '价格低：可以试探';
   }
 
   if (gameState.currentPrice <= item.estimateMax) {
-    return '价格位置：进入估值区间，别上头';
+    return '价格中：谨慎跟';
   }
 
-  return '价格位置：超过估值上沿，高危';
+  return '价格高：建议收手';
 }
 
 function getBargainPotentialText(item) {
@@ -128,19 +128,23 @@ function getBargainPotentialText(item) {
   const riskText = `${item.risk} ${item.tags.join(' ')}`;
   const hasObviousTrapSignal = /真假|暗病|未知|高风险|难卖|压库存|维修|缺失/.test(riskText);
 
+  if (gameState.currentPrice > item.estimateMax) {
+    return '建议：收手';
+  }
+
   if (item.rarity === 'epic' || estimateSpread >= item.startPrice * 5) {
-    return hasObviousTrapSignal ? '捡漏潜力：很高，也很容易翻车' : '捡漏潜力：很高，值得盯紧';
+    return hasObviousTrapSignal ? '建议：小口试探' : '建议：重点盯';
   }
 
   if (item.rarity === 'rare' || upsideByEstimate >= item.startPrice * 2.2) {
-    return hasObviousTrapSignal ? '捡漏潜力：偏高，风险也偏明' : '捡漏潜力：偏高';
+    return hasObviousTrapSignal ? '建议：别大跳' : '建议：可跟';
   }
 
   if (hasObviousTrapSignal && upsideByEstimate < item.startPrice) {
-    return '捡漏潜力：偏保守，别硬冲';
+    return '建议：少碰';
   }
 
-  return '捡漏潜力：中等';
+  return '建议：正常看';
 }
 
 function renderDecisionHints(item) {
@@ -148,21 +152,20 @@ function renderDecisionHints(item) {
   document.querySelector('#decisionHints').innerHTML = [
     { text: getBargainPotentialText(item), className: 'hint-potential' },
     { text: getPricePositionText(item), className: gameState.currentPrice > item.estimateMax ? 'hint-danger' : 'hint-price' },
-    { text: isHot ? '今日热度：命中热点，出手更快' : '今日热度：普通行情', className: isHot ? 'hint-hot' : '' },
+    { text: isHot ? '热点：好出手' : '非热点：别囤太久', className: isHot ? 'hint-hot' : '' },
   ].map((hint) => `<span class="${hint.className}">${hint.text}</span>`).join('');
 }
 
 function renderItem(item) {
   const isHot = item.category === gameState.hotCategory;
   document.querySelector('#itemName').textContent = item.name;
-  document.querySelector('#itemMeta').textContent = `品类：${item.category} · 品相：${item.condition} · 稀有度：${item.rarity}`;
+  document.querySelector('#itemMeta').textContent = `${item.category} · ${item.condition}`;
   document.querySelector('#itemDescription').textContent = item.description;
   document.querySelector('#itemTags').innerHTML = [
-    { text: `起拍价：${formatCurrency(item.startPrice)}`, className: 'price-tag' },
-    { text: `模糊估值：${formatCurrency(item.estimateMin)} - ${formatCurrency(item.estimateMax)}` },
-    { text: `风险：${item.risk}`, className: 'risk-tag' },
-    ...(isHot ? [{ text: `今日热点：${item.category}`, className: 'hot-tag' }] : []),
-    ...item.tags.map((tag) => ({ text: tag })),
+    { text: `起拍 ${formatCurrency(item.startPrice)}`, className: 'price-tag' },
+    { text: `估值 ${formatCurrency(item.estimateMin)}-${formatCurrency(item.estimateMax)}` },
+    { text: item.risk, className: 'risk-tag' },
+    ...(isHot ? [{ text: '今日热点', className: 'hot-tag' }] : []),
   ].map((tag) => `<span class="${tag.className ?? ''}">${tag.text}</span>`).join('');
   renderDecisionHints(item);
 }
@@ -240,8 +243,7 @@ function renderNpcs() {
     const hint = getNpcMindHint(npc).replace(`${pressure}：`, '').replace('已离场：', '');
     return `
       <li class="npc-card ${npc.active ? 'active' : 'inactive'}">
-        <strong>${npc.name}</strong>
-        <span>${status}</span>
+        <div class="npc-main-line"><strong>${npc.name}</strong><span>${status}</span></div>
         <small class="npc-mind-hint">${hint}</small>
       </li>
     `;

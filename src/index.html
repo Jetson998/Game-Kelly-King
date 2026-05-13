@@ -11,7 +11,7 @@
     <header class="hero">
       <p class="eyebrow">Auction Mini Game</p>
       <h1>捡漏之王</h1>
-      <p class="subtitle">七天拍场，一千二起家。看货、读人、压价，别被笑面人抬进坑里。</p>
+      <p class="subtitle">少看废话，盯价格、看对手、该收手就收手。</p>
     </header>
 
     <section class="challenge-board" aria-label="挑战目标">
@@ -58,11 +58,6 @@
           <span id="stepText" class="lot-index">第 1 件</span>
         </div>
 
-        <section class="play-guide" aria-label="玩法提示">
-          <strong>这局怎么赢？</strong>
-          <span>看估值和风险 → 观察三位对手 → 低价拍下 → 出手变现 → 7 天内冲到目标现金。</span>
-        </section>
-
         <div class="item-card">
           <div class="item-image-placeholder" aria-hidden="true">?</div>
           <div class="item-info">
@@ -107,14 +102,17 @@
           <p id="dealSpotlightText">成交后会在这里显示赚亏。</p>
         </section>
 
-        <div class="action-row" aria-label="竞价操作">
-          <button type="button" data-bid-amount="50">小加一口 +50</button>
-          <button type="button" data-bid-amount="100">稳稳跟价 +100</button>
-          <button type="button" data-bid-amount="500">豪掷一刀 +500</button>
-          <button type="button" id="passButton" class="ghost">收手观望</button>
-          <button type="button" id="nextItemButton" class="ghost" disabled>下一件</button>
-        </div>
-        <p id="stepHint" class="hint">提示：出价不要超过你愿意承担的风险；放弃不扣钱。</p>
+        <section class="action-panel" aria-label="主要操作">
+          <p class="action-title">你现在要做什么？</p>
+          <div class="action-row" aria-label="竞价操作">
+            <button type="button" data-bid-amount="50"><span>试探</span><strong>+50</strong></button>
+            <button type="button" data-bid-amount="100"><span>跟一口</span><strong>+100</strong></button>
+            <button type="button" data-bid-amount="500"><span>强抢</span><strong>+500</strong></button>
+            <button type="button" id="passButton" class="ghost danger-action"><span>不追了</span><strong>收手</strong></button>
+            <button type="button" id="nextItemButton" class="ghost next-action" disabled><span>本轮结束</span><strong>下一件</strong></button>
+          </div>
+          <p id="stepHint" class="hint">先看“建议”，再点下面的大按钮。黄色是加价，灰色是收手/下一件。</p>
+        </section>
         <div class="auction-footer-row">
           <p class="save-status" aria-live="polite">存档状态：<span id="saveStatusText">尚未保存</span></p>
           <button type="button" class="ghost restart-mini-button" data-restart-game>重新开始</button>
