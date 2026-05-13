@@ -668,12 +668,22 @@ function bindPlayerActions() {
   document.querySelectorAll('[data-bid-amount]').forEach((button) => {
     button.addEventListener('click', () => placePlayerBid(Number(button.dataset.bidAmount)));
   });
+  const openInventory = () => { document.querySelector('#inventoryDrawer').hidden = false; };
+  const openLog = () => {
+    const logDrawer = document.querySelector('#logDrawer');
+    logDrawer.open = true;
+    logDrawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  };
+
   document.querySelector('#passButton').addEventListener('click', passCurrentItem);
   document.querySelector('#sellNowButton').addEventListener('click', sellPendingNow);
   document.querySelector('#keepItemButton').addEventListener('click', keepPendingItem);
   document.querySelector('#nextItemButton').addEventListener('click', finishSettlement);
   document.querySelectorAll('[data-restart-game]').forEach((button) => button.addEventListener('click', resetGame));
-  document.querySelector('#inventoryToggle').addEventListener('click', () => { document.querySelector('#inventoryDrawer').hidden = false; });
+  document.querySelector('#inventoryToggle').addEventListener('click', openInventory);
+  document.querySelectorAll('[data-open-inventory]').forEach((button) => button.addEventListener('click', openInventory));
+  document.querySelector('#logToggle').addEventListener('click', openLog);
+  document.querySelectorAll('[data-open-log]').forEach((button) => button.addEventListener('click', openLog));
   document.querySelector('#inventoryClose').addEventListener('click', () => { document.querySelector('#inventoryDrawer').hidden = true; });
   document.querySelector('#inventoryDrawer').addEventListener('click', (event) => {
     if (event.target.id === 'inventoryDrawer') document.querySelector('#inventoryDrawer').hidden = true;

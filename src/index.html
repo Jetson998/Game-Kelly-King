@@ -14,9 +14,10 @@
         <h1>捡漏之王</h1>
       </div>
       <div class="top-actions">
-        <button type="button" id="inventoryToggle" class="chip-button">库存 <span id="inventoryText">0 / 4</span></button>
+        <button type="button" id="inventoryToggle" class="tool-button"><span>打开库存</span><strong id="inventoryText">0 / 4</strong></button>
+        <button type="button" id="logToggle" class="tool-button"><span>查看日志</span><strong>记录</strong></button>
         <details class="settings-menu">
-          <summary aria-label="打开设置">⚙</summary>
+          <summary aria-label="打开设置"><span>设置</span><strong>重开</strong></summary>
           <div class="settings-popover">
             <p class="save-status">存档：<span id="saveStatusText">尚未保存</span></p>
             <button type="button" class="ghost" data-restart-game>重新开始</button>
@@ -51,6 +52,13 @@
       </div>
       <div class="wealth-progress-track"><span id="wealthProgressBar"></span></div>
     </div>
+
+    <section class="feature-map" aria-label="功能入口说明">
+      <button type="button" data-open-inventory><span>库存</span><strong>存货 / 卖货</strong></button>
+      <button type="button" data-open-log><span>日志</span><strong>完整记录</strong></button>
+      <article><span>鉴定</span><strong>拍下后自动出现</strong></article>
+      <article><span>结算</span><strong>落槌后处理</strong></article>
+    </section>
 
     <section class="stage-card" aria-label="拍卖主舞台">
       <div class="stage-head">
@@ -137,8 +145,8 @@
       </div>
     </aside>
 
-    <details class="log-drawer">
-      <summary>查看完整记录</summary>
+    <details id="logDrawer" class="log-drawer">
+      <summary>日志 / 完整记录</summary>
       <ol id="logList" class="log-list" aria-live="polite">
         <li>欢迎来到大湾区流动拍场，第一件货已经上台。</li>
       </ol>
