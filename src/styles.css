@@ -746,3 +746,69 @@ dd { margin: 5px 0 0; font-size: 1.08rem; font-weight: 900; }
   .tutorial-visual,
   .tutorial-actions { grid-template-columns: 1fr; }
 }
+
+body.tutorial-active {
+  overflow-x: hidden;
+}
+body.tutorial-active::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 36;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--focus-x, 50%) var(--focus-y, 38%), transparent 0 8rem, rgba(0, 0, 0, 0.42) 15rem);
+}
+.tutorial-focus-target {
+  position: relative;
+  z-index: 45;
+  outline: 3px solid var(--gold);
+  outline-offset: 6px;
+  box-shadow: 0 0 0 10px rgba(247, 189, 75, 0.16), var(--shadow);
+  animation: tutorialFocusPulse 1.25s ease-in-out infinite alternate;
+}
+.tutorial-focus-target::after {
+  content: attr(data-focus-label);
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 14px);
+  z-index: 1;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: min(320px, calc(100vw - 34px));
+  padding: 8px 12px;
+  border: 1px solid rgba(247, 189, 75, 0.35);
+  border-radius: 999px;
+  background: rgba(27, 31, 42, 0.96);
+  color: var(--gold);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-align: center;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
+}
+.tutorial-overlay {
+  pointer-events: none;
+  align-items: end;
+  background: rgba(0, 0, 0, 0.28);
+  backdrop-filter: none;
+}
+.tutorial-card {
+  pointer-events: auto;
+}
+
+@keyframes tutorialFocusPulse {
+  from { outline-offset: 5px; box-shadow: 0 0 0 8px rgba(247, 189, 75, 0.12), var(--shadow); }
+  to { outline-offset: 9px; box-shadow: 0 0 0 14px rgba(247, 189, 75, 0.22), var(--shadow); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-focus-target { animation: none !important; }
+}
+
+@media (max-width: 760px) {
+  .tutorial-overlay { align-items: end; }
+  .tutorial-card { max-height: 52vh; overflow: auto; }
+  .tutorial-focus-target::after {
+    top: auto;
+    bottom: calc(100% + 12px);
+  }
+}

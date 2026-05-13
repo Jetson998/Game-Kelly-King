@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v9';
+const STORAGE_KEY = 'kelly-king-save-v10';
 const TUTORIAL_KEY = 'kelly-king-tutorial-seen-v1';
 const MAX_LOG_ENTRIES = 80;
 
@@ -54,11 +54,11 @@ const MARKET_EVENTS = [
 ];
 
 const INITIAL_GAME_STATE = {
-  phase: 7,
-  step: '7.3',
-  stepIndex: 3,
+  phase: 8,
+  step: '8.2',
+  stepIndex: 2,
   phaseStepTotal: 3,
-  stepName: '音效开关',
+  stepName: '视觉标注与焦点高亮',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -107,16 +107,22 @@ const TUTORIAL_STEPS = [
     title: '目标只有一个：现金过线',
     text: '7 天、每天 5 件货。现金到 ￥6,500 才算真正赢，库存报价只是参考，最后别把利润都压在货里。',
     visual: ['7 天', '5 件/天', '现金目标'],
+    focusSelector: '.status-strip',
+    focusLabel: '先看这里：天数、现金、目标差额',
   },
   {
     title: '先看风险，再决定加价',
     text: '中间三条短提示会告诉你：这件值不值得盯、当前价高不高、是不是热点货。不要被对手加价带节奏。',
     visual: ['建议', '价格', '热点'],
+    focusSelector: '#decisionHints',
+    focusLabel: '这三条是本轮判断入口',
   },
   {
     title: '拍下后再处理去留',
     text: '落槌后才会出现鉴定价。赚得稳就马上变现；想赌行情再放库存，但库存只有 4 格。',
     visual: ['立即卖出', '放入库存', '下一件'],
+    focusSelector: '.primary-actions',
+    focusLabel: '每一步只看底部主按钮',
   },
 ];
 
@@ -405,6 +411,23 @@ function renderSoundToggle() {
   button.setAttribute('aria-pressed', String(gameState.soundEnabled));
 }
 
+function clearTutorialFocus() {
+  document.querySelectorAll('.tutorial-focus-target').forEach((node) => {
+    node.classList.remove('tutorial-focus-target');
+    node.removeAttribute('data-focus-label');
+  });
+}
+
+function applyTutorialFocus(step) {
+  clearTutorialFocus();
+  if (!step.focusSelector) return;
+  const target = document.querySelector(step.focusSelector);
+  if (!target) return;
+  target.classList.add('tutorial-focus-target');
+  target.dataset.focusLabel = step.focusLabel ?? '看这里';
+  target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
 function renderTutorialStep() {
   const step = TUTORIAL_STEPS[tutorialStep];
   if (!step) return;
@@ -416,16 +439,20 @@ function renderTutorialStep() {
   });
   document.querySelector('#tutorialPrevButton').disabled = tutorialStep === 0;
   document.querySelector('#tutorialNextButton').textContent = tutorialStep === TUTORIAL_STEPS.length - 1 ? '开始拍卖' : '下一步';
+  applyTutorialFocus(step);
 }
 
 function openTutorial() {
   tutorialStep = 0;
-  renderTutorialStep();
+  document.body.classList.add('tutorial-active');
   document.querySelector('#tutorialOverlay').hidden = false;
+  renderTutorialStep();
 }
 
 function closeTutorial(markSeen = true) {
   document.querySelector('#tutorialOverlay').hidden = true;
+  document.body.classList.remove('tutorial-active');
+  clearTutorialFocus();
   if (markSeen) {
     try { localStorage.setItem(TUTORIAL_KEY, '1'); } catch (error) { console.warn('保存新手引导状态失败', error); }
   }
@@ -455,7 +482,7 @@ function updateSaveStatus(text) {
 
 function getSerializableGameState() {
   return {
-    version: 9,
+    version: 10,
     savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,

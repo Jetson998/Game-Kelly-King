@@ -241,7 +241,7 @@
 
 ## 当前推荐下一步
 
-阶段 8 已启动。当前推荐下一步：阶段 8 / Step 8.2 做视觉标注与焦点高亮，或部署 GitHub Pages / Netlify。
+阶段 8 已推进到 Step 8.2。当前推荐下一步：阶段 8 / Step 8.3 做首局节奏保护，或部署 GitHub Pages / Netlify。
 
 
 ## 阶段 7：体验增强
@@ -266,11 +266,40 @@
   - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：首次进入显示 3 步新手引导，说明现金目标、判断提示和拍下后处理；关闭后用 localStorage 记住，设置里可重新打开
   - 步骤位置：阶段 8 / Step 8.1（1/3）
-- [ ] Step 8.2 视觉标注与焦点高亮
-  - 文件：`src/index.html`, `src/main.js`, `src/styles.css`
+- [x] Step 8.2 视觉标注与焦点高亮
+  - 文件：`src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：引导步骤能高亮对应区域，玩家更清楚该看哪里
   - 步骤位置：阶段 8 / Step 8.2（2/3）
 - [ ] Step 8.3 首局节奏保护
   - 文件：`src/main.js`, `src/data/items.js`
   - 验收：首局前 1-2 件货更适合作为教学样本，降低一上来随机到高风险陷阱的挫败感
   - 步骤位置：阶段 8 / Step 8.3（3/3）
+
+
+### Step 8.2 视觉标注与焦点高亮
+
+步骤位置：阶段 8 / Step 8.2（2/3）
+
+完成文件：
+
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 新手引导每一步绑定一个页面焦点区域：状态栏、判断提示、底部主操作区
+- 引导打开时页面对应区域会高亮描边，并显示一句短标签告诉玩家“看哪里”
+- 引导卡片改为底部浮层，避免完全挡住被教学区域
+- 关闭或跳过引导时会清除焦点状态，避免高亮残留
+- 存档 key 升到 `kelly-king-save-v10`，同步当前阶段标记到 8.2
+
+验证方式：
+
+- 首次进入或点击设置里的“新手引导”，三步教程应依次高亮状态栏、判断提示、底部主操作区
+- 点击上一步/下一步，高亮区域应跟随切换
+- 跳过或开始拍卖后，高亮与遮罩应消失
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`

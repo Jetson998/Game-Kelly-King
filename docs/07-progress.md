@@ -868,3 +868,42 @@
 ```text
 阶段 8 / Step 8.2（2/3）视觉标注与焦点高亮，或部署 GitHub Pages / Netlify。
 ```
+
+
+### Step 8.2 视觉标注与焦点高亮
+
+步骤位置：阶段 8 / Step 8.2（2/3）
+
+完成文件：
+
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 为 3 步新手引导增加 `focusSelector` 与 `focusLabel`，分别对应状态栏、判断提示和主操作区
+- 新增教程焦点控制：打开教程时标记 `body.tutorial-active`，切换步骤时清理旧焦点并高亮当前区域
+- 教程卡片改为底部浮层并允许与页面焦点共存，减少“只看弹窗、不看界面”的问题
+- 高亮样式支持减少动态效果偏好，移动端标签位置做了适配
+- 存档版本升级到 v10，当前步骤标记更新到阶段 8 / Step 8.2
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地页面检查教程文案与焦点样式存在
+
+下一步建议：
+
+```text
+阶段 8 / Step 8.3（3/3）首局节奏保护
+```
+
+范围限制：
+
+- 只调整首次/首局前 1-2 件货的出货节奏
+- 不改核心数值目标
+- 不新增复杂剧情系统
