@@ -826,24 +826,56 @@ dd { margin: 5px 0 0; font-size: 1.08rem; font-weight: 900; }
 }
 
 @media (max-width: 520px) {
-  .event-card { grid-template-columns: 1fr; gap: 5px; }
-  .landing-card { padding: 18px; }
-  .landing-copy h2 { font-size: 2.15rem; }
-  .landing-stats,
-  .quick-rules,
-  .feedback-card,
-  .status-strip,
-  .item-tags,
+  body { font-size: 15px; }
+  .app-shell { width: min(100% - 14px, 980px); padding-top: 10px; padding-bottom: 10px; }
+  .event-card { grid-template-columns: 1fr; gap: 5px; margin-bottom: 10px; padding: 10px 12px; }
+  .topbar { gap: 10px; margin-bottom: 12px; }
+  .brand h1 { font-size: clamp(2rem, 13vw, 3.2rem); line-height: 0.92; }
+  .brand .eyebrow { font-size: 0.72rem; }
+  .top-actions { grid-template-columns: 1fr 1fr 0.8fr; gap: 8px; width: 100%; }
+  .tool-button, .settings-menu summary { min-height: 50px; padding: 0.62rem 0.7rem; }
+  .tool-button span, .settings-menu summary span { font-size: 0.72rem; }
+  .tool-button strong, .settings-menu summary strong { font-size: 0.92rem; }
+  .landing-card { padding: 16px; gap: 14px; margin-bottom: 10px; }
+  .landing-copy h2 { font-size: clamp(1.8rem, 9vw, 2.2rem); max-width: 14ch; }
+  .landing-copy p:not(.eyebrow) { line-height: 1.5; }
+  .landing-stats { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .landing-stats span { padding: 10px 8px; }
+  .quick-rules { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .quick-rules article { padding: 10px 8px; }
+  .quick-rules strong { font-size: 0.82rem; }
+  .feedback-card { grid-template-columns: 1fr; padding: 12px; }
+  .status-strip { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .status-strip article { padding: 11px 12px; }
+  .status-strip span { font-size: 0.72rem; }
+  .status-strip strong { font-size: 0.94rem; }
+  .stage-card { padding: 14px; border-radius: 20px; }
+  .stage-head { gap: 10px; margin-bottom: 12px; }
+  .stage-head h3 { font-size: clamp(1.55rem, 8vw, 2.1rem); }
+  .lot-card { padding: 14px; border-radius: 18px; }
+  .lot-meta { font-size: 0.82rem; }
+  .lot-desc { font-size: 0.92rem; line-height: 1.48; }
+  .price-board { padding: 12px; border-radius: 16px; }
+  .price-board strong { font-size: clamp(1.75rem, 11vw, 2.45rem); }
+  .item-tags { grid-template-columns: 1fr 1fr; }
+  .item-tags span { padding: 9px 10px; font-size: 0.8rem; }
+  .decision-summary { padding: 12px; border-radius: 15px; }
+  .decision-summary strong { font-size: 1rem; }
+  .decision-summary span { font-size: 0.9rem; line-height: 1.42; }
   .decision-hints,
   .npc-list,
   .settlement-stats,
   .result-content dl,
   .achievement-strip,
   .recap-grid { grid-template-columns: 1fr; }
-  .topbar { gap: 10px; }
-  .top-actions { grid-template-columns: 1fr; }
-  .stage-card { padding: 16px; }
-  .lot-card { padding: 16px; }
+  .decision-hints span { padding: 12px; font-size: 0.92rem; }
+  .primary-actions { bottom: 8px; margin-top: 10px; padding: 10px; border-radius: 18px; }
+  .action-hint, .action-toast { margin-bottom: 8px; font-size: 0.9rem; }
+  .action-row { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .action-row button { min-height: 58px; padding: 0.62rem 0.5rem; }
+  .action-row button strong { font-size: 1.08rem; }
+  .action-row button span { font-size: 0.74rem; }
+  .settlement-actions { grid-template-columns: 1fr; }
 }
 
 .tutorial-overlay {

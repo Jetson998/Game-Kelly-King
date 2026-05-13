@@ -1066,7 +1066,7 @@ function getWorstRecord(records, scoreGetter) {
 
 function getResultTitle(finalAssets, isWin) {
   if (gameState.cash >= gameState.targetCash * 1.25) return '拍场封王';
-  if (isWin) return '捡漏之王';
+  if (isWin) return '湾区捡漏王';
   if (finalAssets >= gameState.targetCash) return '货在手里，现金差口气';
   if (finalAssets >= BALANCE_CONFIG.startingCash * 2) return '眼力不错，还缺周转';
   return '这局交了学费';
@@ -1146,7 +1146,7 @@ function getShareLines(recap, finalAssets, isWin) {
     : `现金 ${formatCurrency(gameState.cash)}，离目标还差 ${formatCurrency(Math.max(gameState.targetCash - gameState.cash, 0))}。`;
 
   return [
-    '我刚打完一局《捡漏之王》',
+    '我刚打完一局《湾区捡漏王》',
     `称号：${recap.title}`,
     cashLine,
     `最终资产：${formatCurrency(finalAssets)} · 成交 ${recap.boughtCount} 单 · 已变现 ${recap.soldCount} 单`,
@@ -1255,7 +1255,7 @@ function getFeedbackTemplate() {
     : `试玩到第 ${gameState.day} 天第 ${Math.max(gameState.lotsSeenToday, 1)}/${gameState.lotsPerDay} 件，当前现金 ${formatCurrency(gameState.cash)}。`;
 
   return [
-    '《捡漏之王》试玩反馈',
+    '《湾区捡漏王》试玩反馈',
     progressText,
     '',
     '1. 我第一次打开时，是否立刻知道目标和下一步要点？',

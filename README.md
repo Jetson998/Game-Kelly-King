@@ -1,4 +1,4 @@
-# 捡漏之王
+# 湾区捡漏王
 
 一个轻量网页小游戏：在 7 天流动拍场里，用 ￥1,200 起家，通过竞拍、鉴定、快速出售和读懂对手，把现金做到 ￥6,500。打开页面即可试玩，单局约 8 分钟。
 
@@ -72,7 +72,7 @@ http://127.0.0.1:4173/
 node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js
 git diff --check
 python3 -m http.server 4173 -d src
-curl -fsS http://127.0.0.1:4173/ | grep '捡漏之王'
+curl -fsS http://127.0.0.1:4173/ | grep '湾区捡漏王'
 ```
 
 手动试玩建议检查：
