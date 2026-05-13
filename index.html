@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>湾区货王</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div class="brand">
+        <p class="eyebrow">Bay Area Auction Game</p>
+        <h1>湾区货王</h1>
+      </div>
+      <div class="top-actions">
+        <button type="button" id="inventoryToggle" class="tool-button"><span>打开库存</span><strong id="inventoryText">0 / 4</strong></button>
+        <button type="button" id="logToggle" class="tool-button"><span>查看日志</span><strong>记录</strong></button>
+        <details class="settings-menu">
+          <summary aria-label="打开设置"><span>设置</span><strong>重开</strong></summary>
+          <div class="settings-popover">
+            <p class="save-status">存档：<span id="saveStatusText">尚未保存</span></p>
+            <button type="button" id="soundToggle" class="ghost setting-toggle" aria-pressed="true">音效：开</button>
+            <button type="button" id="tutorialReplayButton" class="ghost">新手引导</button>
+            <button type="button" id="copyShareButton" class="ghost">复制战绩</button>
+            <button type="button" class="ghost" data-restart-game>重新开始</button>
+          </div>
+        </details>
+      </div>
+    </header>
+
+    <section class="landing-card" aria-label="游戏介绍">
+      <div class="landing-copy">
+        <p class="eyebrow">7-Day Cash Challenge</p>
+        <h2>￥1,200 起家，7 天冲到 ￥6,500。</h2>
+        <p>看估值、读风险、别被对手抬价带走。拍下后立刻鉴定，赚得稳就变现，现金才算赢。</p>
+      </div>
+      <div class="landing-play">
+        <div class="landing-stats" aria-label="玩法要点">
+          <span><strong>30</strong> 件拍品</span>
+          <span><strong>3</strong> 位对手</span>
+          <span><strong>1</strong> 局约 8 分钟</span>
+        </div>
+        <button type="button" id="startPlayButton" class="start-play-button">开始捡漏</button>
+      </div>
+    </section>
+
+    <section class="quick-rules" aria-label="快速玩法">
+      <article><span>① 看货</span><strong>估值、风险、热点</strong></article>
+      <article><span>② 出手</span><strong>试探、跟价、收手</strong></article>
+      <article><span>③ 变现</span><strong>立即卖或压库存</strong></article>
+    </section>
+
+    <section class="feedback-card" aria-label="试玩反馈">
+      <div>
+        <span>试玩反馈</span>
+        <strong>打完一局后，帮我看 3 件事：哪里迷路、哪里上头、哪里想重来。</strong>
+      </div>
+      <button type="button" id="copyFeedbackButton" class="ghost">复制反馈模板</button>
+    </section>
+
+    <section class="status-strip" aria-label="当前状态">
+      <article>
+        <span>进度</span>
+        <strong id="dayText">第 1 天 · 第 1 件</strong>
+      </article>
+      <article>
+        <span>现金</span>
+        <strong id="cashText">￥1,200</strong>
+      </article>
+      <article>
+        <span>目标</span>
+        <strong id="targetGapText">差 ￥5,300</strong>
+      </article>
+      <article class="hot">
+        <span>热点</span>
+        <strong id="hotCategoryText">每日变化</strong>
+      </article>
+    </section>
+
+    <div class="wealth-progress" aria-label="财富进度">
+      <div class="wealth-progress-meta">
+        <span id="wealthProgressText">￥1,200 / ￥6,500</span>
+        <strong id="wealthProgressPercent">18%</strong>
+      </div>
+      <div class="wealth-progress-track"><span id="wealthProgressBar"></span></div>
+    </div>
+
+    <section class="event-card" aria-label="今日拍场风声">
+      <span>拍场风声</span>
+      <strong id="eventNameText">暂无风声</strong>
+      <p id="eventSummaryText">今天场面平稳，照常看货出价。</p>
+    </section>
+
+    <section class="stage-card" aria-label="拍卖主舞台">
+      <div class="stage-head">
+        <div>
+          <p class="eyebrow" id="stageEyebrow">Current Lot</p>
+          <h2 id="stageTitle">现在买不买？</h2>
+        </div>
+        <span id="stepText" class="lot-pill">第 1/5 件</span>
+      </div>
+
+      <section id="auctionView" class="auction-view">
+        <article class="lot-card">
+          <div class="lot-main">
+            <p id="itemMeta" class="lot-meta">港货回流 · 七成新</p>
+            <h3 id="itemName">香港回流胶片相机</h3>
+            <p id="itemDescription" class="lot-desc">卖家说是家里翻出来的，不太懂，镜头边缘有些磨损。</p>
+          </div>
+          <aside class="price-board">
+            <span>当前价</span>
+            <strong id="currentPriceText">￥200</strong>
+            <small id="leaderText">暂无领先</small>
+          </aside>
+        </article>
+
+        <div id="itemTags" class="item-tags" aria-label="拍品要点"></div>
+        <div id="decisionSummary" class="decision-summary safe" aria-label="出价止损线"></div>
+        <div id="decisionHints" class="decision-hints" aria-label="判断提示"></div>
+
+        <section class="rivals-compact" aria-label="对手动向">
+          <div class="section-mini-title">
+            <strong>对手动向</strong>
+            <span>只看状态，别被带节奏</span>
+          </div>
+          <ul class="npc-list"></ul>
+        </section>
+
+        <p id="recentEventText" class="recent-event">第一件货已经上台。</p>
+      </section>
+
+      <section id="settlementView" class="settlement-view" hidden>
+        <p class="eyebrow">Deal Result</p>
+        <h3 id="settlementTitle">成交结果</h3>
+        <p id="settlementSummary" class="settlement-summary"></p>
+        <dl class="settlement-stats">
+          <div><dt>成交价</dt><dd id="settlementPrice">-</dd></div>
+          <div><dt>鉴定价</dt><dd id="settlementValue">-</dd></div>
+          <div><dt>本单结果</dt><dd id="settlementProfit">-</dd></div>
+          <div><dt>快速出售</dt><dd id="settlementSale">-</dd></div>
+        </dl>
+      </section>
+
+      <section id="resultPanel" class="result-panel" hidden>
+        <p class="eyebrow">Final Result</p>
+        <h3>挑战结算</h3>
+        <div id="resultContent" class="result-content"></div>
+        <button type="button" id="copyResultButton" class="ghost">复制战绩</button>
+        <button type="button" class="ghost" data-restart-game>重新开始</button>
+      </section>
+    </section>
+
+    <section class="primary-actions" aria-label="主操作">
+      <p id="stepHint" class="action-hint">先看建议，再决定出价或收手。</p>
+      <div id="actionToast" class="action-toast" hidden role="status" aria-live="polite"></div>
+      <div id="auctionActions" class="action-row">
+        <button type="button" data-bid-amount="50"><span>试探</span><strong>+50</strong></button>
+        <button type="button" data-bid-amount="100"><span>跟价</span><strong>+100</strong></button>
+        <button type="button" data-bid-amount="500"><span>强抢</span><strong>+500</strong></button>
+        <button type="button" id="passButton" class="ghost danger-action"><span>不追了</span><strong>收手</strong></button>
+      </div>
+      <div id="settlementActions" class="action-row settlement-actions" hidden>
+        <button type="button" id="sellNowButton"><span>马上变现</span><strong>立即卖出</strong></button>
+        <button type="button" id="keepItemButton" class="ghost"><span>以后再卖</span><strong>放入库存</strong></button>
+        <button type="button" id="nextItemButton" class="ghost next-action"><span>继续拍场</span><strong>下一件</strong></button>
+      </div>
+    </section>
+
+    <aside id="inventoryDrawer" class="drawer" hidden>
+      <div class="drawer-card">
+        <div class="drawer-head">
+          <div>
+            <p class="eyebrow">Inventory</p>
+            <h2>库存管理</h2>
+          </div>
+          <button type="button" id="inventoryClose" class="ghost close-button">关闭</button>
+        </div>
+        <ul id="inventoryList" class="inventory-list"><li>暂无库存。</li></ul>
+      </div>
+    </aside>
+
+    <details id="logDrawer" class="log-drawer">
+      <summary>日志 / 完整记录</summary>
+      <ol id="logList" class="log-list" aria-live="polite">
+        <li>欢迎来到大湾区流动拍场，第一件货已经上台。</li>
+      </ol>
+    </details>
+
+    <section id="tutorialOverlay" class="tutorial-overlay" hidden aria-modal="true" role="dialog" aria-labelledby="tutorialTitle">
+      <article class="tutorial-card">
+        <p class="eyebrow">New Player Guide</p>
+        <h2 id="tutorialTitle">先看三件事</h2>
+        <p id="tutorialText">这是一场 7 天捡漏挑战。目标不是每件都买，而是用有限现金做出最划算的选择。</p>
+        <div id="tutorialVisual" class="tutorial-visual" aria-hidden="true"></div>
+        <div class="tutorial-progress" aria-label="引导进度">
+          <span data-tutorial-dot></span>
+          <span data-tutorial-dot></span>
+          <span data-tutorial-dot></span>
+        </div>
+        <div class="tutorial-actions">
+          <button type="button" id="tutorialSkipButton" class="ghost">跳过</button>
+          <button type="button" id="tutorialPrevButton" class="ghost">上一步</button>
+          <button type="button" id="tutorialNextButton">下一步</button>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <script src="./data/items.js"></script>
+  <script src="./data/npcs.js"></script>
+  <script src="./auction.js"></script>
+  <script src="./main.js"></script>
+</body>
+</html>
