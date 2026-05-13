@@ -596,7 +596,7 @@
 
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
-- `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `大湾区倒爷`、`styles.css` 和 `main.js`
+- `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `湾区收买佬`、`styles.css` 和 `main.js`
 - 打开 `http://127.0.0.1:4173/`，大屏和窄屏下主要操作按钮都应可读、可点击
 
 ### 大湾区灰市捡漏风格改版
@@ -1067,7 +1067,7 @@
 
 完成内容：
 
-- 根据反馈将游戏名从“大湾区货王”调整为“**大湾区倒爷**”
+- 根据反馈将游戏名从“大湾区货王”调整为“**湾区收买佬**”
 - 同步页面标题、首屏标题、结算称号、分享/反馈文案、README 与文档验证命令
 - 暂保留现有 GitHub Pages 路径 `Game-Kelly-King`，避免影响已发布试玩链接
 
@@ -1075,4 +1075,27 @@
 
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
-- `curl -fsS http://127.0.0.1:4173/ | grep '大湾区倒爷'`
+- `curl -fsS http://127.0.0.1:4173/ | grep '湾区收买佬'`
+
+### 游戏命名二次调整与部署
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `README.md`
+- `docs/01-game-design.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 根据最新反馈，将游戏正式名调整为“**湾区收买佬**”
+- 同步页面标题、首屏标题、结算称号、分享/反馈文案、README 与验证命令
+- 继续使用现有 GitHub Pages 仓库路径部署，避免试玩链接变化
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- `curl -fsS http://127.0.0.1:4173/ | grep '湾区收买佬'`
