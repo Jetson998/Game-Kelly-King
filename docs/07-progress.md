@@ -1099,3 +1099,27 @@
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
 - `curl -fsS http://127.0.0.1:4173/ | grep '湾区收买佬'`
+
+### 根目录发布页同步
+
+完成文件：
+
+- `index.html`
+- `main.js`
+- `auction.js`
+- `styles.css`
+- `data/items.js`
+- `data/npcs.js`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 将 `src/` 内最新试玩版本同步到仓库根目录发布页
+- 修复 GitHub Pages 根路径仍显示旧名的问题
+- 根目录与 `src/` 现在统一显示“湾区收买佬”
+
+验证方式：
+
+- `node --check main.js auction.js data/items.js data/npcs.js src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地静态页 grep 确认包含 `湾区收买佬`
