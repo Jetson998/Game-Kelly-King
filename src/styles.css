@@ -8,14 +8,13 @@
   --gold: #f7bd4b;
   --orange: #ef7d45;
   --green: #68d391;
+  --red: #fc8181;
   --border: rgba(255, 255, 255, 0.1);
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
   font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -26,7 +25,6 @@ body {
     radial-gradient(circle at bottom right, rgba(239, 125, 69, 0.14), transparent 28rem),
     var(--bg);
   -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
 }
 
 button {
@@ -37,1145 +35,436 @@ button {
   color: #23180b;
   background: linear-gradient(135deg, var(--gold), #ffe08a);
   font-size: 1rem;
-  font-weight: 800;
-  cursor: not-allowed;
-  opacity: 0.55;
+  font-weight: 900;
+  cursor: pointer;
   touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
 }
 
-button.ghost {
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+  filter: grayscale(0.6);
+}
+
+button.ghost,
+.chip-button {
   color: var(--text);
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--border);
 }
 
 .app-shell {
-  width: min(1180px, calc(100% - 32px));
+  width: min(980px, calc(100% - 28px));
   margin: 0 auto;
-  padding: 36px 0;
+  padding: 24px 0 140px;
 }
 
-.hero {
-  margin-bottom: 20px;
-}
-
-.challenge-board {
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(280px, 1.1fr);
-  gap: 20px;
+.topbar,
+.status-strip,
+.stage-head,
+.lot-card,
+.wealth-progress-meta,
+.drawer-head,
+.inventory-entry,
+.settings-popover .save-status {
+  display: flex;
   align-items: center;
-  margin-bottom: 16px;
-  padding: 22px;
-  border: 1px solid rgba(247, 189, 75, 0.24);
-  border-radius: 26px;
-  background:
-    linear-gradient(135deg, rgba(247, 189, 75, 0.16), rgba(104, 211, 145, 0.08)),
-    rgba(27, 31, 42, 0.92);
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.topbar { margin-bottom: 16px; }
+
+.brand h1 {
+  margin: 0;
+  font-size: clamp(2rem, 7vw, 4rem);
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+h2, h3, p { margin-top: 0; }
+h2 { margin-bottom: 0; font-size: 1.25rem; }
+h3 { margin-bottom: 10px; font-size: clamp(1.7rem, 5vw, 2.6rem); line-height: 1.1; }
+
+.top-actions { display: flex; align-items: center; gap: 10px; }
+.chip-button { min-height: 42px; border-radius: 999px; padding: 0.65rem 0.9rem; }
+.chip-button span { color: var(--gold); }
+
+.settings-menu { position: relative; }
+.settings-menu summary {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  list-style: none;
+}
+.settings-menu summary::-webkit-details-marker { display: none; }
+.settings-popover {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 10px);
+  z-index: 10;
+  width: 230px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(27, 31, 42, 0.98);
   box-shadow: var(--shadow);
 }
-
-.challenge-board h2 {
-  margin-bottom: 8px;
-  font-size: clamp(1.55rem, 4vw, 2.3rem);
-  letter-spacing: -0.03em;
-}
-
-.challenge-board p {
-  margin-bottom: 0;
+.settings-popover .save-status {
+  margin-bottom: 12px;
   color: var(--muted);
+  font-size: 0.82rem;
 }
+.settings-popover button { width: 100%; }
+
+.status-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 12px;
+}
+.status-strip article,
+.stage-card,
+.primary-actions,
+.log-drawer,
+.drawer-card {
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(27, 31, 42, 0.9);
+  box-shadow: var(--shadow);
+}
+.status-strip article { padding: 14px 16px; }
+.status-strip span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+.status-strip strong { font-size: 1.04rem; }
+.status-strip .hot strong { color: var(--green); }
 
 .wealth-progress {
   display: grid;
-  gap: 10px;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 0 4px;
 }
-
-.wealth-progress-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  color: var(--muted);
-  font-weight: 800;
-}
-
-.wealth-progress-meta strong {
-  color: var(--green);
-}
-
+.wealth-progress-meta { color: var(--muted); font-size: 0.88rem; font-weight: 800; }
+.wealth-progress-meta strong { color: var(--green); }
 .wealth-progress-track {
-  height: 16px;
+  height: 12px;
   overflow: hidden;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.1);
 }
-
 .wealth-progress-track span {
   display: block;
-  width: 0;
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, var(--gold), var(--green));
   transition: width 0.28s ease;
 }
 
-.eyebrow {
-  margin: 0 0 6px;
-  color: var(--gold);
-  font-size: 0.76rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-h1,
-h2,
-h3,
-p {
-  margin-top: 0;
-}
-
-h1 {
-  margin-bottom: 8px;
-  font-size: clamp(2.35rem, 6vw, 4.5rem);
-  line-height: 1;
-  letter-spacing: -0.04em;
-}
-
-h2 {
-  margin-bottom: 0;
-  font-size: 1.15rem;
-}
-
-h3 {
-  margin-bottom: 8px;
-  font-size: clamp(1.45rem, 3.4vw, 1.8rem);
-  line-height: 1.18;
-}
-
-.subtitle {
-  margin-bottom: 0;
-  color: var(--muted);
-  font-size: 1.05rem;
-}
-
-
-.status-bar,
-.game-layout,
-.action-row {
-  display: grid;
-  gap: 16px;
-}
-
-.status-bar {
-  grid-template-columns: repeat(4, 1fr);
-  margin-bottom: 16px;
-}
-
-.status-card,
-.auction-panel,
-.npc-panel,
-.inventory-panel,
-.appraisal-panel,
-.result-panel,
-.log-panel {
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  background: rgba(27, 31, 42, 0.88);
-  box-shadow: var(--shadow);
-}
-
-.status-card {
-  padding: 18px;
-}
-
-.status-card.hot strong {
-  color: var(--green);
-}
-
-.status-label {
-  display: block;
-  margin-bottom: 6px;
-  color: var(--muted);
-  font-size: 0.82rem;
-}
-
-.status-card strong,
-.bid-box strong {
-  font-size: 1.35rem;
-}
-
-.game-layout {
-  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.8fr);
-  align-items: start;
-}
-
-.auction-panel,
-.npc-panel,
-.inventory-panel,
-.appraisal-panel,
-.result-panel,
-.log-panel {
-  padding: 22px;
-}
-
-.side-panel {
-  display: grid;
-  gap: 16px;
-}
-
-.section-title-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-.lot-index {
+.stage-card { padding: 22px; }
+.stage-head { align-items: flex-start; margin-bottom: 18px; }
+.lot-pill {
+  flex: none;
   padding: 8px 12px;
   border-radius: 999px;
   color: #23180b;
   background: var(--gold);
+  font-size: 0.86rem;
   font-weight: 900;
 }
 
-.item-card {
-  display: grid;
-  grid-template-columns: 160px minmax(0, 1fr);
-  gap: 20px;
-  padding: 18px;
-  border-radius: 22px;
+.lot-card {
+  align-items: stretch;
+  padding: 20px;
+  border-radius: 24px;
   background: var(--panel-strong);
 }
-
-.item-image-placeholder {
-  display: grid;
-  place-items: center;
-  min-height: 180px;
-  border: 2px dashed rgba(255, 255, 255, 0.2);
-  border-radius: 18px;
+.lot-main { min-width: 0; }
+.lot-meta {
+  margin-bottom: 8px;
   color: var(--gold);
-  background: rgba(255, 255, 255, 0.04);
-  font-size: 4rem;
+  font-size: 0.9rem;
   font-weight: 900;
 }
-
-.item-info p {
+.lot-desc {
+  max-width: 62ch;
+  margin-bottom: 0;
   color: var(--muted);
-  line-height: 1.7;
+  line-height: 1.6;
 }
-
-.item-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.decision-hints {
+.price-board {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  place-content: center;
+  min-width: 190px;
+  padding: 18px;
+  border: 1px solid rgba(247, 189, 75, 0.22);
+  border-radius: 20px;
+  background: rgba(247, 189, 75, 0.08);
+  text-align: center;
+}
+.price-board span,
+.price-board small { color: var(--muted); }
+.price-board strong {
+  display: block;
+  margin: 4px 0;
+  color: var(--gold);
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1;
+}
+
+.item-tags,
+.decision-hints,
+.npc-list,
+.action-row,
+.settlement-stats {
+  display: grid;
   gap: 10px;
+}
+.item-tags {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   margin-top: 14px;
 }
-
-.decision-hints span {
+.item-tags span {
   padding: 10px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text);
   font-size: 0.86rem;
   font-weight: 800;
-  line-height: 1.4;
+  line-height: 1.35;
 }
+.item-tags .hot-tag,
+.item-tags .price-tag { color: var(--gold); }
+.item-tags .risk-tag { color: #ffd2d2; }
 
-.decision-hints .hint-hot,
-.decision-hints .hint-potential {
-  border-color: rgba(104, 211, 145, 0.2);
-  background: rgba(104, 211, 145, 0.1);
+.decision-hints {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 14px;
 }
-
+.decision-hints span {
+  padding: 16px 14px;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 1rem;
+  font-weight: 900;
+  text-align: center;
+}
+.decision-hints .hint-potential,
+.decision-hints .hint-hot {
+  border-color: rgba(104, 211, 145, 0.24);
+  background: rgba(104, 211, 145, 0.11);
+}
 .decision-hints .hint-danger {
-  border-color: rgba(252, 129, 129, 0.22);
+  border-color: rgba(252, 129, 129, 0.28);
   background: rgba(252, 129, 129, 0.12);
   color: #ffd2d2;
 }
 
-.play-guide {
-  display: grid;
-  gap: 6px;
-  margin-bottom: 16px;
-  padding: 14px 16px;
-  border: 1px solid rgba(247, 189, 75, 0.18);
-  border-radius: 18px;
-  background: rgba(247, 189, 75, 0.08);
-}
-
-.play-guide strong {
-  color: var(--gold);
-}
-
-.play-guide span {
-  color: rgba(244, 239, 229, 0.88);
-  line-height: 1.55;
-}
-
-.deal-spotlight {
-  margin-top: 16px;
+.rivals-compact {
+  margin-top: 18px;
   padding: 16px;
-  border: 1px solid rgba(104, 211, 145, 0.22);
   border-radius: 20px;
-  background: linear-gradient(135deg, rgba(104, 211, 145, 0.16), rgba(247, 189, 75, 0.08));
+  background: rgba(255, 255, 255, 0.045);
 }
-
-.deal-spotlight[hidden] {
-  display: none;
-}
-
-.deal-spotlight.loss {
-  border-color: rgba(252, 129, 129, 0.26);
-  background: linear-gradient(135deg, rgba(252, 129, 129, 0.15), rgba(255, 255, 255, 0.05));
-}
-
-.deal-spotlight h3 {
-  margin-bottom: 8px;
-}
-
-.deal-spotlight p:last-child {
-  margin-bottom: 0;
-  color: rgba(244, 239, 229, 0.9);
-  line-height: 1.65;
-}
-
-.item-tags span {
-  padding: 8px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--text);
-  font-size: 0.88rem;
-}
-
-.bid-box {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin: 18px 0;
-}
-
-.bid-box > div {
-  padding: 16px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.07);
-}
-
-.action-row {
-  grid-template-columns: repeat(5, 1fr);
-}
-
-.hint,
-.save-status {
-  margin: 14px 0 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
-
-.auction-footer-row {
+.section-mini-title {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 14px;
+  margin-bottom: 12px;
 }
-
-.save-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  padding: 8px 12px;
-  border: 1px solid rgba(104, 211, 145, 0.22);
-  border-radius: 999px;
-  background: rgba(104, 211, 145, 0.08);
-}
-
-.restart-mini-button {
-  padding: 0.7rem 0.95rem;
-  font-size: 0.88rem;
-}
-
-.save-status span {
-  color: var(--green);
-  font-weight: 800;
-}
-
-.npc-list,
-.log-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
+.section-mini-title span { color: var(--muted); font-size: 0.86rem; }
 .npc-list {
-  display: grid;
-  gap: 12px;
-}
-
-.npc-list li,
-.log-list li {
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.npc-list li.active {
-  border: 1px solid rgba(247, 189, 75, 0.22);
-}
-
-.npc-list li.inactive {
-  opacity: 0.58;
-}
-
-.npc-list small {
-  display: block;
-  margin-top: 6px;
-  color: rgba(168, 173, 186, 0.82);
-  font-size: 0.78rem;
-  line-height: 1.45;
-}
-
-.npc-mind-hint {
-  padding: 8px 10px;
-  border-left: 3px solid rgba(247, 189, 75, 0.62);
-  border-radius: 10px;
-  background: rgba(247, 189, 75, 0.08);
-  color: rgba(244, 239, 229, 0.9) !important;
-}
-
-.npc-list strong {
-  display: block;
-  margin-bottom: 6px;
-}
-
-.npc-list span,
-.log-list li {
-  color: var(--muted);
-  line-height: 1.55;
-}
-
-.log-list {
-  display: grid;
-  gap: 10px;
-  counter-reset: log;
-}
-
-.log-list li {
-  counter-increment: log;
-}
-
-.log-list li::before {
-  content: counter(log, decimal-leading-zero);
-  margin-right: 10px;
-  color: var(--gold);
-  font-weight: 900;
-}
-
-@media (max-width: 860px) {
-  .status-bar,
-  .game-layout,
-  .item-card,
-  .bid-box,
-  .action-row,
-  .challenge-board,
-  .decision-hints {
-    grid-template-columns: 1fr;
-  }
-
-  .item-image-placeholder {
-    min-height: 120px;
-  }
-
-  .inventory-list li,
-  .auction-footer-row {
-    grid-template-columns: 1fr;
-  }
-
-  .auction-footer-row {
-    align-items: stretch;
-  }
-
-  .restart-mini-button {
-    width: 100%;
-  }
-}
-
-.inventory-list {
-  display: grid;
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin: 0;
   padding: 0;
   list-style: none;
 }
-
-.inventory-list li {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: center;
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(104, 211, 145, 0.09);
-}
-
-.inventory-list strong {
-  display: block;
-  margin-bottom: 6px;
-}
-
-.inventory-item-info {
-  display: grid;
-  gap: 6px;
-}
-
-.inventory-list span {
-  color: var(--muted);
-}
-
-.sell-button {
-  padding: 0.65rem 0.8rem;
-  font-size: 0.86rem;
-}
-
-button:not(:disabled) {
-  cursor: pointer;
-  opacity: 1;
-}
-
-.result-panel {
-  background: linear-gradient(135deg, rgba(247, 189, 75, 0.14), rgba(104, 211, 145, 0.08));
-}
-
-.result-panel[hidden] {
-  display: none;
-}
-
-.result-panel.loss {
-  background: linear-gradient(135deg, rgba(252, 129, 129, 0.14), rgba(255, 255, 255, 0.04));
-}
-
-.result-content {
-  display: grid;
-  gap: 12px;
-  margin-bottom: 14px;
-  color: var(--muted);
-}
-
-.result-title {
-  margin-bottom: 0;
-  color: var(--text);
-  font-weight: 900;
-  line-height: 1.6;
-}
-
-.result-content dl {
-  display: grid;
-  gap: 10px;
-  margin: 0;
-}
-
-.result-content div {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0 0;
-  border-top: 1px solid var(--border);
-}
-
-.result-content dd {
-  margin: 0;
-  color: var(--text);
-  font-weight: 900;
-}
-
-.appraisal-result {
-  padding: 14px;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.06);
-  color: var(--muted);
-}
-
-.appraisal-result p {
-  margin-bottom: 0;
-  line-height: 1.6;
-}
-
-.appraisal-item-name {
-  color: var(--text);
-  font-weight: 900;
-}
-
-.appraisal-result dl {
-  display: grid;
-  gap: 10px;
-  margin: 12px 0 0;
-}
-
-.appraisal-result div {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding-top: 10px;
-  border-top: 1px solid var(--border);
-}
-
-.appraisal-result dt {
-  color: var(--muted);
-}
-
-.appraisal-result dd {
-  margin: 0;
-  color: var(--text);
-  font-weight: 900;
-}
-
-.appraisal-result .profit dd {
-  color: var(--green);
-}
-
-.appraisal-result .loss dd {
-  color: #fc8181;
-}
-
-/* Step 4.1 UI polish */
-button {
-  transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease, background 0.16s ease;
-}
-
-button:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 24px rgba(247, 189, 75, 0.22);
-}
-
-button:not(:disabled):active {
-  transform: translateY(0);
-}
-
-.status-card {
-  position: relative;
-  overflow: hidden;
-}
-
-.status-card::after {
-  content: "";
-  position: absolute;
-  inset: auto 16px 0;
-  height: 3px;
-  border-radius: 999px 999px 0 0;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.status-card.hot::after {
-  background: linear-gradient(90deg, var(--green), var(--gold));
-}
-
-.auction-panel {
-  position: sticky;
-  top: 16px;
-}
-
-.item-card {
-  border: 1px solid rgba(247, 189, 75, 0.12);
-}
-
-.item-image-placeholder {
-  background:
-    radial-gradient(circle at 30% 25%, rgba(247, 189, 75, 0.2), transparent 32%),
-    rgba(255, 255, 255, 0.04);
-}
-
-.item-tags span.hot-tag,
-.market-chip {
-  color: #122016;
-  background: linear-gradient(135deg, var(--green), #b7f5ce);
-  font-weight: 900;
-}
-
-.item-tags span.risk-tag {
-  color: #fff1e8;
-  background: rgba(239, 125, 69, 0.2);
-}
-
-.item-tags span.price-tag {
-  color: #23180b;
-  background: linear-gradient(135deg, var(--gold), #ffe08a);
-  font-weight: 900;
-}
-
-.bid-box {
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.bid-box > div {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.inventory-list li.empty-state {
-  display: block;
-  color: var(--muted);
-  line-height: 1.6;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.inventory-list li.inventory-entry {
-  border: 1px solid rgba(104, 211, 145, 0.14);
-}
-
-.inventory-list li.hot-inventory {
-  background: linear-gradient(135deg, rgba(104, 211, 145, 0.16), rgba(247, 189, 75, 0.08));
-}
-
-.sale-line.profit {
-  color: var(--green);
-}
-
-.sale-line.loss {
-  color: #fc8181;
-}
-
-.sale-line.even {
-  color: var(--text);
-}
-
-.market-chip {
-  width: fit-content;
-  padding: 5px 8px;
-  border-radius: 999px;
-  font-size: 0.76rem;
-}
-
-.log-panel {
-  max-height: 560px;
-  overflow: auto;
-}
-
-.log-list li:last-child {
-  color: var(--text);
-  background: rgba(247, 189, 75, 0.1);
-  border: 1px solid rgba(247, 189, 75, 0.18);
-}
-
-@media (max-width: 1020px) {
-  .bid-box {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .auction-panel {
-    position: static;
-  }
-}
-
-/* Step 5.2: desktop browser + mobile layout pass */
-@media (min-width: 1180px) {
-  .side-panel {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 1080px) {
-  .game-layout {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .side-panel {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .log-panel,
-  .result-panel {
-    grid-column: 1 / -1;
-  }
-}
-
-@media (max-width: 760px) {
-  body {
-    background:
-      radial-gradient(circle at top, rgba(247, 189, 75, 0.16), transparent 23rem),
-      var(--bg);
-  }
-
-  .app-shell {
-    width: min(100% - 20px, 1180px);
-    padding: 18px 0 28px;
-  }
-
-  .hero {
-    margin-bottom: 16px;
-  }
-
-  .subtitle {
-    font-size: 0.96rem;
-    line-height: 1.65;
-  }
-
-  .challenge-board {
-    padding: 18px;
-    border-radius: 20px;
-  }
-
-  .wealth-progress-meta {
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .status-bar,
-  .side-panel {
-    grid-template-columns: 1fr;
-  }
-
-  .status-bar {
-    gap: 10px;
-  }
-
-  .status-card,
-  .auction-panel,
-  .npc-panel,
-  .inventory-panel,
-  .appraisal-panel,
-  .result-panel,
-  .log-panel {
-    border-radius: 18px;
-    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.25);
-  }
-
-  .status-card,
-  .auction-panel,
-  .npc-panel,
-  .inventory-panel,
-  .appraisal-panel,
-  .result-panel,
-  .log-panel {
-    padding: 16px;
-  }
-
-  .section-title-row {
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 14px;
-  }
-
-  .lot-index {
-    padding: 7px 10px;
-    font-size: 0.8rem;
-    line-height: 1.25;
-    white-space: nowrap;
-  }
-
-  .item-card {
-    gap: 14px;
-    padding: 14px;
-    border-radius: 18px;
-  }
-
-  .item-image-placeholder {
-    display: none;
-  }
-
-  .item-info p {
-    line-height: 1.6;
-  }
-
-  .item-tags {
-    gap: 8px;
-  }
-
-  .decision-hints {
-    grid-template-columns: 1fr;
-  }
-
-  .item-tags span {
-    border-radius: 12px;
-    font-size: 0.8rem;
-    line-height: 1.35;
-  }
-
-  .bid-box {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-
-  .bid-box > div {
-    padding: 12px;
-  }
-
-  .status-card strong,
-  .bid-box strong {
-    font-size: 1.12rem;
-  }
-
-  .action-row {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-  }
-
-  .action-row button {
-    padding-inline: 0.6rem;
-  }
-
-  #passButton,
-  #nextItemButton {
-    grid-column: span 3;
-  }
-
-  .log-panel {
-    max-height: 360px;
-  }
-}
-
-@media (max-width: 420px) {
-  h1 {
-    font-size: 2.25rem;
-  }
-
-  .bid-box,
-  .action-row {
-    grid-template-columns: 1fr;
-  }
-
-  #passButton,
-  #nextItemButton {
-    grid-column: auto;
-  }
-
-  .auction-footer-row {
-    display: grid;
-  }
-
-  .save-status {
-    justify-content: center;
-  }
-}
-
-/* Step 5.4: reduce information density and make clickable actions unmistakable */
-.hero {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.hero h1 {
-  margin-bottom: 0;
-}
-
-.subtitle {
-  max-width: 560px;
-  text-align: right;
-}
-
-.challenge-board {
-  grid-template-columns: 0.82fr 1.18fr;
-  padding: 16px 18px;
-  border-radius: 20px;
-}
-
-.challenge-board h2 {
-  font-size: clamp(1.25rem, 3vw, 1.7rem);
-}
-
-.status-card {
-  padding: 14px 16px;
-}
-
-.status-card strong,
-.bid-box strong {
-  font-size: 1.12rem;
-}
-
-.auction-panel {
-  padding: 20px;
-}
-
-.item-card {
-  grid-template-columns: 1fr;
-  gap: 12px;
-  padding: 18px;
-}
-
-.item-image-placeholder {
-  display: none;
-}
-
-.item-info p {
-  margin-bottom: 10px;
-  line-height: 1.55;
-}
-
-.item-tags {
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.item-tags span {
-  border-radius: 12px;
-  font-size: 0.82rem;
-  line-height: 1.3;
-}
-
-.decision-hints {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin-top: 12px;
-}
-
-.decision-hints span {
-  padding: 14px;
-  border-width: 2px;
-  font-size: 1rem;
-  text-align: center;
-}
-
-.bid-box {
-  grid-template-columns: repeat(4, 1fr);
-  margin: 14px 0;
-}
-
-.bid-box > div {
+.npc-card {
   padding: 12px;
-  border-radius: 14px;
+  border: 1px solid rgba(247, 189, 75, 0.2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.npc-card.inactive { opacity: 0.55; }
+.npc-card strong,
+.npc-card span,
+.npc-card small { display: block; }
+.npc-card span { margin: 6px 0; color: var(--gold); font-weight: 900; }
+.npc-card small { color: var(--muted); line-height: 1.4; }
+
+.recent-event {
+  margin: 16px 0 0;
+  padding: 12px 14px;
+  border-left: 4px solid var(--gold);
+  border-radius: 12px;
+  background: rgba(247, 189, 75, 0.08);
+  color: rgba(244, 239, 229, 0.9);
+  line-height: 1.5;
 }
 
-.action-panel {
+.settlement-view {
+  padding: 22px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(104, 211, 145, 0.13), rgba(247, 189, 75, 0.08));
+}
+.settlement-summary { color: var(--muted); line-height: 1.65; }
+.settlement-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 18px 0 0;
+}
+.settlement-stats div,
+.result-content dl div {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.08);
+}
+dt { color: var(--muted); font-size: 0.8rem; }
+dd { margin: 5px 0 0; font-size: 1.08rem; font-weight: 900; }
+
+.primary-actions {
+  position: sticky;
+  bottom: 16px;
+  z-index: 8;
   margin-top: 16px;
   padding: 16px;
-  border: 2px solid rgba(247, 189, 75, 0.28);
-  border-radius: 22px;
-  background: rgba(247, 189, 75, 0.08);
+  border-color: rgba(247, 189, 75, 0.26);
+  background: rgba(27, 31, 42, 0.96);
+  backdrop-filter: blur(16px);
 }
-
-.action-title {
-  margin: 0 0 12px;
+.action-hint {
+  margin-bottom: 12px;
   color: var(--gold);
-  font-size: 1.05rem;
   font-weight: 900;
 }
-
-.action-row {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr)) repeat(2, minmax(120px, 0.7fr));
-  gap: 12px;
-}
-
+.action-row { grid-template-columns: repeat(4, 1fr); }
 .action-row button {
   display: grid;
   gap: 4px;
   place-items: center;
-  min-height: 82px;
+  min-height: 76px;
   border: 2px solid rgba(255, 255, 255, 0.12);
-  border-radius: 20px;
-  box-shadow: 0 14px 30px rgba(247, 189, 75, 0.18);
+  box-shadow: 0 14px 30px rgba(247, 189, 75, 0.15);
 }
+.action-row button span { font-size: 0.82rem; opacity: 0.82; }
+.action-row button strong { font-size: 1.35rem; line-height: 1; }
+.action-row .danger-action { border-color: rgba(252, 129, 129, 0.32); background: rgba(252, 129, 129, 0.12); }
+.action-row .next-action,
+.action-row #keepItemButton { border-color: rgba(104, 211, 145, 0.26); background: rgba(104, 211, 145, 0.12); }
+.settlement-actions { grid-template-columns: repeat(3, 1fr); }
 
-.action-row button span {
-  font-size: 0.82rem;
-  opacity: 0.82;
+.drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: end center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.55);
 }
-
-.action-row button strong {
-  font-size: 1.45rem;
-  line-height: 1;
+.drawer[hidden], [hidden] { display: none !important; }
+.drawer-card {
+  width: min(760px, 100%);
+  max-height: 78vh;
+  overflow: auto;
+  padding: 20px;
 }
+.close-button { min-height: 40px; padding: 0.6rem 0.8rem; }
+.inventory-list,
+.log-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.inventory-entry {
+  padding: 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.inventory-entry div { display: grid; gap: 5px; }
+.inventory-entry span { color: var(--muted); font-size: 0.9rem; }
+.inventory-entry .profit { color: var(--green); }
+.inventory-entry .loss { color: var(--red); }
+.sell-button { min-width: 88px; }
+.empty-state { color: var(--muted); padding: 16px; }
 
-.action-row button:not(:disabled) {
+.log-drawer {
+  margin-top: 14px;
+  padding: 14px 16px;
+}
+.log-drawer summary {
+  color: var(--muted);
   cursor: pointer;
-  opacity: 1;
+  font-weight: 800;
 }
-
-.action-row button:not(:disabled):hover {
-  transform: translateY(-2px);
-  filter: brightness(1.05);
-}
-
-.action-row button:disabled {
-  opacity: 0.38;
-  box-shadow: none;
-}
-
-.action-row .danger-action:not(:disabled) {
-  border-color: rgba(252, 129, 129, 0.28);
-  background: rgba(252, 129, 129, 0.12);
-}
-
-.action-row .next-action:not(:disabled) {
-  border-color: rgba(104, 211, 145, 0.32);
-  background: rgba(104, 211, 145, 0.16);
-}
-
-.npc-list {
-  gap: 8px;
-}
-
-.npc-list li {
+.log-list { margin-top: 14px; }
+.log-list li {
   padding: 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  line-height: 1.5;
 }
 
-.npc-main-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.result-panel {
+  margin-top: 18px;
+  padding: 20px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.06);
+}
+.result-content dl {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
-
-.npc-main-line span {
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  color: var(--gold);
-  font-size: 0.78rem;
-  font-weight: 900;
-}
-
-.npc-mind-hint {
-  margin-top: 8px;
-}
-
-.log-panel {
-  max-height: 360px;
-}
+.result-title { color: var(--gold); font-weight: 900; }
 
 @media (max-width: 760px) {
-  .hero {
-    display: block;
-  }
-
-  .subtitle {
-    text-align: left;
-  }
-
-  .challenge-board,
-  .status-bar,
-  .bid-box,
+  .app-shell { width: min(100% - 20px, 980px); padding-top: 16px; }
+  .topbar { align-items: flex-start; }
+  .brand h1 { font-size: 2.4rem; }
+  .status-strip,
+  .item-tags,
   .decision-hints,
-  .action-row {
-    grid-template-columns: 1fr;
-  }
+  .npc-list,
+  .settlement-stats,
+  .result-content dl { grid-template-columns: 1fr 1fr; }
+  .lot-card { display: grid; }
+  .price-board { min-width: 0; }
+  .action-row,
+  .settlement-actions { grid-template-columns: 1fr 1fr; }
+  .action-row button { min-height: 70px; }
+  .section-mini-title { display: block; }
+}
 
-  .action-panel {
-    position: sticky;
-    bottom: 10px;
-    z-index: 5;
-    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
-  }
-
-  .action-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .action-row button {
-    min-height: 72px;
-  }
-
-  .action-row button strong {
-    font-size: 1.25rem;
-  }
+@media (max-width: 520px) {
+  .status-strip,
+  .item-tags,
+  .decision-hints,
+  .npc-list,
+  .settlement-stats,
+  .result-content dl { grid-template-columns: 1fr; }
+  .topbar { gap: 10px; }
+  .top-actions { flex-direction: column; align-items: flex-end; }
+  .stage-card { padding: 16px; }
+  .lot-card { padding: 16px; }
 }

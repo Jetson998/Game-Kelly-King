@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v2';
+const STORAGE_KEY = 'kelly-king-save-v3';
 const MAX_LOG_ENTRIES = 80;
 
 const BALANCE_CONFIG = {
@@ -15,11 +15,11 @@ const BALANCE_CONFIG = {
 };
 
 const INITIAL_GAME_STATE = {
-  phase: 5,
-  step: '5.2',
-  stepIndex: 2,
-  phaseStepTotal: 3,
-  stepName: '操作清晰度优化',
+  phase: 6,
+  step: '6.1',
+  stepIndex: 1,
+  phaseStepTotal: 1,
+  stepName: '流程驱动界面重构',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -38,11 +38,10 @@ const INITIAL_GAME_STATE = {
   hasPassed: false,
   auctionEnded: false,
   settlementDone: false,
+  pendingSettlement: null,
   gameOver: false,
   saveStatus: '尚未保存',
-  logs: [
-    '第一件货已经上台。看估值和风险，决定要不要加价。',
-  ],
+  logs: ['第一件货已经上台。看估值和风险，决定要不要加价。'],
 };
 
 function createInitialGameState() {
@@ -58,7 +57,7 @@ function createInitialGameState() {
 const gameState = createInitialGameState();
 
 function formatCurrency(value) {
-  return `￥${value.toLocaleString('zh-CN')}`;
+  return `￥${Number(value).toLocaleString('zh-CN')}`;
 }
 
 function pickOne(options) {
@@ -105,20 +104,13 @@ function getMarketReport(category) {
   return reports[category] ?? `${category} 今天更受关注，报价和竞价都会更激进。`;
 }
 
-function renderStepStatus() {
-  document.querySelector('#stepText').textContent = `第 ${gameState.lotsSeenToday || 1}/${gameState.lotsPerDay} 件`;
-  document.querySelector('#stepHint').textContent = '看上方建议，点下方大按钮。黄色=加价，灰色=收手/下一件。';
-}
-
 function getPricePositionText(item) {
   if (gameState.currentPrice < item.estimateMin) {
     return '价格低：可以试探';
   }
-
   if (gameState.currentPrice <= item.estimateMax) {
     return '价格中：谨慎跟';
   }
-
   return '价格高：建议收手';
 }
 
@@ -128,22 +120,14 @@ function getBargainPotentialText(item) {
   const riskText = `${item.risk} ${item.tags.join(' ')}`;
   const hasObviousTrapSignal = /真假|暗病|未知|高风险|难卖|压库存|维修|缺失/.test(riskText);
 
-  if (gameState.currentPrice > item.estimateMax) {
-    return '建议：收手';
-  }
-
+  if (gameState.currentPrice > item.estimateMax) return '建议：收手';
   if (item.rarity === 'epic' || estimateSpread >= item.startPrice * 5) {
     return hasObviousTrapSignal ? '建议：小口试探' : '建议：重点盯';
   }
-
   if (item.rarity === 'rare' || upsideByEstimate >= item.startPrice * 2.2) {
     return hasObviousTrapSignal ? '建议：别大跳' : '建议：可跟';
   }
-
-  if (hasObviousTrapSignal && upsideByEstimate < item.startPrice) {
-    return '建议：少碰';
-  }
-
+  if (hasObviousTrapSignal && upsideByEstimate < item.startPrice) return '建议：少碰';
   return '建议：正常看';
 }
 
@@ -171,83 +155,31 @@ function renderItem(item) {
 }
 
 function getNpcPressureLevel(npc) {
-  if (!npc.active) {
-    return '已离场';
-  }
-
+  if (!npc.active) return '已退场';
   const ratio = gameState.currentPrice / Math.max(npc.maxBid, 1);
-  if (ratio >= 0.9) {
-    return '快到极限';
-  }
-
-  if (ratio >= 0.7) {
-    return '开始犹豫';
-  }
-
-  if (ratio >= 0.45) {
-    return '仍有兴趣';
-  }
-
+  if (ratio >= 0.9) return '快到极限';
+  if (ratio >= 0.7) return '开始犹豫';
+  if (ratio >= 0.45) return '仍有兴趣';
   return '空间很大';
 }
 
-function getNpcMindHint(npc) {
-  const item = gameState.currentItem;
-  if (!item) {
-    return npc.tell;
-  }
-
-  const likesCategory = npc.favoriteCategories?.includes(item.category);
-  const avoidsCategory = npc.avoidCategories?.includes(item.category);
-  const pressure = getNpcPressureLevel(npc);
-
-  if (!npc.active) {
-    return `${pressure}：${npc.name}已经退场，他的退出理由比心理价更值得看。`;
-  }
-
-  if (npc.id === 'rookie') {
-    if (likesCategory || item.rarity === 'rare' || item.rarity === 'epic') {
-      return `${pressure}：他眼里有少年气，见稀罕物便想抢一手；别被这股热血带偏。`;
-    }
-    if (avoidsCategory) {
-      return `${pressure}：他不太懂这一路货色，跟价参考价值偏低。`;
-    }
-    return `${pressure}：他多半凭一口气出价，场面越热越容易失了分寸。`;
-  }
-
-  if (npc.id === 'dealer') {
-    if (likesCategory || item.category === gameState.hotCategory) {
-      return `${pressure}：沈三还在拨算盘；他肯跟，通常说明这货不是纯垃圾。`;
-    }
-    if (avoidsCategory) {
-      return `${pressure}：沈三不爱沾这类风险货，早退不一定代表东西差。`;
-    }
-    return `${pressure}：铁算盘只认利润，他收手时，多半是价格已经不香。`;
-  }
-
-  if (npc.id === 'shill') {
-    if (likesCategory) {
-      return `${pressure}：胡不归笑得越深越要小心，他可能正等你多加一口。`;
-    }
-    return `${pressure}：他未必真想买，重点是看他何时忽然合扇收手。`;
-  }
-
-  return `${pressure}：${npc.tell}`;
+function getNpcShortHint(npc) {
+  if (!npc.active) return '已收手';
+  if (npc.id === 'rookie') return '容易上头';
+  if (npc.id === 'dealer') return '只认利润';
+  if (npc.id === 'shill') return '可能抬价';
+  return npc.tell;
 }
 
 function renderNpcs() {
   const npcList = document.querySelector('.npc-list');
-  npcList.innerHTML = gameState.npcs.map((npc) => {
-    const pressure = getNpcPressureLevel(npc);
-    const status = npc.active ? pressure : '已退出';
-    const hint = getNpcMindHint(npc).replace(`${pressure}：`, '').replace('已离场：', '');
-    return `
-      <li class="npc-card ${npc.active ? 'active' : 'inactive'}">
-        <div class="npc-main-line"><strong>${npc.name}</strong><span>${status}</span></div>
-        <small class="npc-mind-hint">${hint}</small>
-      </li>
-    `;
-  }).join('');
+  npcList.innerHTML = gameState.npcs.map((npc) => `
+    <li class="npc-card ${npc.active ? 'active' : 'inactive'}">
+      <strong>${npc.name}</strong>
+      <span>${getNpcPressureLevel(npc)}</span>
+      <small>${getNpcShortHint(npc)}</small>
+    </li>
+  `).join('');
 }
 
 function getRandomMultiplier(min, max) {
@@ -258,121 +190,32 @@ function calculateSalePrice(item) {
   const saleRange = item.category === gameState.hotCategory
     ? BALANCE_CONFIG.hotSaleMultiplier
     : BALANCE_CONFIG.normalSaleMultiplier;
-  const multiplier = getRandomMultiplier(saleRange.min, saleRange.max);
-
-  return Math.round(item.realValue * multiplier);
+  return Math.round(item.realValue * getRandomMultiplier(saleRange.min, saleRange.max));
 }
 
-function rerollInventorySalePrices(reason = '市场热度变化') {
-  gameState.inventory.forEach((entry) => {
-    entry.salePrice = calculateSalePrice(entry.item);
-  });
-
-  if (gameState.inventory.length > 0) {
-    addLog(`${reason}，库存的快速出售报价已重新刷新。`);
-  }
+function getProfitAmount(entry) {
+  return entry.item.realValue - entry.purchasePrice;
 }
 
 function getProfitText(entry) {
-  const profit = entry.item.realValue - entry.purchasePrice;
-  if (profit > 0) {
-    return `预计赚 ${formatCurrency(profit)}`;
-  }
-
-  if (profit < 0) {
-    return `预计亏 ${formatCurrency(Math.abs(profit))}`;
-  }
-
+  const profit = getProfitAmount(entry);
+  if (profit > 0) return `预计赚 ${formatCurrency(profit)}`;
+  if (profit < 0) return `预计亏 ${formatCurrency(Math.abs(profit))}`;
   return '预计不赚不亏';
 }
 
 function getSaleProfitClass(entry) {
   const netProfit = entry.salePrice - entry.purchasePrice;
-  if (netProfit > 0) {
-    return 'profit';
-  }
-
-  if (netProfit < 0) {
-    return 'loss';
-  }
-
+  if (netProfit > 0) return 'profit';
+  if (netProfit < 0) return 'loss';
   return 'even';
 }
 
 function getSaleProfitText(entry) {
   const netProfit = entry.salePrice - entry.purchasePrice;
-  if (netProfit > 0) {
-    return `卖出净赚 ${formatCurrency(netProfit)}`;
-  }
-
-  if (netProfit < 0) {
-    return `卖出净亏 ${formatCurrency(Math.abs(netProfit))}`;
-  }
-
+  if (netProfit > 0) return `卖出净赚 ${formatCurrency(netProfit)}`;
+  if (netProfit < 0) return `卖出净亏 ${formatCurrency(Math.abs(netProfit))}`;
   return '卖出不赚不亏';
-}
-
-function renderInventory() {
-  const inventoryList = document.querySelector('#inventoryList');
-  if (gameState.inventory.length === 0) {
-    inventoryList.innerHTML = '<li class="empty-state">暂无库存。拍下一件东西后，这里会显示鉴定价和出售报价。</li>';
-    return;
-  }
-
-  inventoryList.innerHTML = gameState.inventory.map((entry, index) => `
-    <li class="inventory-entry ${entry.item.category === gameState.hotCategory ? 'hot-inventory' : ''}">
-      <div class="inventory-item-info">
-        <strong>${entry.item.name}</strong>
-        <span>成交价：${formatCurrency(entry.purchasePrice)} · 鉴定价：${formatCurrency(entry.item.realValue)} · ${getProfitText(entry)}</span>
-        <span class="sale-line ${getSaleProfitClass(entry)}">快速出售报价：${formatCurrency(entry.salePrice)} · ${getSaleProfitText(entry)}</span>
-        ${entry.item.category === gameState.hotCategory ? '<span class="market-chip">今日热点加成中</span>' : ''}
-      </div>
-      <button type="button" class="sell-button" data-sell-index="${index}" ${gameState.gameOver ? 'disabled' : ''}>快速出售</button>
-    </li>
-  `).join('');
-}
-
-function renderDealSpotlight(entry) {
-  const spotlight = document.querySelector('#dealSpotlight');
-  const title = document.querySelector('#dealSpotlightTitle');
-  const text = document.querySelector('#dealSpotlightText');
-  const profit = entry.item.realValue - entry.purchasePrice;
-  const isProfit = profit >= 0;
-
-  spotlight.hidden = false;
-  spotlight.classList.toggle('profit', isProfit);
-  spotlight.classList.toggle('loss', !isProfit);
-  title.textContent = isProfit ? '捡漏成功！' : '打眼了！';
-  text.textContent = `你以 ${formatCurrency(entry.purchasePrice)} 拿下「${entry.item.name}」，真实价值 ${formatCurrency(entry.item.realValue)}，${getProfitText(entry)}。`;
-}
-
-function hideDealSpotlight() {
-  const spotlight = document.querySelector('#dealSpotlight');
-  spotlight.hidden = true;
-  spotlight.classList.remove('profit', 'loss');
-}
-
-function renderAppraisal() {
-  const appraisalResult = document.querySelector('#appraisalResult');
-  const lastEntry = gameState.inventory.at(-1);
-
-  if (!lastEntry) {
-    appraisalResult.innerHTML = '<p>拍下物品后，这里会显示真实价值与赚亏预估。</p>';
-    return;
-  }
-
-  const profit = lastEntry.item.realValue - lastEntry.purchasePrice;
-  const resultClass = profit >= 0 ? 'profit' : 'loss';
-  const resultText = getProfitText(lastEntry);
-
-  appraisalResult.innerHTML = `
-    <p class="appraisal-item-name">${lastEntry.item.name}</p>
-    <dl>
-      <div><dt>成交价</dt><dd>${formatCurrency(lastEntry.purchasePrice)}</dd></div>
-      <div><dt>真实价值</dt><dd>${formatCurrency(lastEntry.item.realValue)}</dd></div>
-      <div class="${resultClass}"><dt>鉴定结论</dt><dd>${resultText}</dd></div>
-    </dl>
-  `;
 }
 
 function addLog(text, options = {}) {
@@ -381,30 +224,28 @@ function addLog(text, options = {}) {
   if (gameState.logs.length > MAX_LOG_ENTRIES) {
     gameState.logs = gameState.logs.slice(-MAX_LOG_ENTRIES);
   }
-
   renderLogs();
-
-  if (!skipSave) {
-    saveGame();
-  }
+  renderRecentEvent();
+  if (!skipSave) saveGame();
 }
 
 function renderLogs() {
-  const logList = document.querySelector('#logList');
-  logList.innerHTML = gameState.logs.map((text) => `<li>${text}</li>`).join('');
+  document.querySelector('#logList').innerHTML = gameState.logs.map((text) => `<li>${text}</li>`).join('');
+}
+
+function renderRecentEvent() {
+  document.querySelector('#recentEventText').textContent = gameState.logs.at(-1) ?? '第一件货已经上台。';
 }
 
 function updateSaveStatus(text) {
   gameState.saveStatus = text;
-  const saveStatusText = document.querySelector('#saveStatusText');
-  if (saveStatusText) {
-    saveStatusText.textContent = text;
-  }
+  const node = document.querySelector('#saveStatusText');
+  if (node) node.textContent = text;
 }
 
 function getSerializableGameState() {
   return {
-    version: 1,
+    version: 3,
     savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,
@@ -429,6 +270,7 @@ function getSerializableGameState() {
     hasPassed: gameState.hasPassed,
     auctionEnded: gameState.auctionEnded,
     settlementDone: gameState.settlementDone,
+    pendingSettlement: gameState.pendingSettlement,
     gameOver: gameState.gameOver,
     logs: gameState.logs,
   };
@@ -437,29 +279,19 @@ function getSerializableGameState() {
 function saveGame() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(getSerializableGameState()));
-    updateSaveStatus(`已自动保存 · 第 ${gameState.day} 天第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`);
+    updateSaveStatus(`已保存 · 第 ${gameState.day} 天第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`);
   } catch (error) {
-    updateSaveStatus('保存失败：浏览器可能禁用了 localStorage');
+    updateSaveStatus('保存失败');
     console.error('保存游戏失败', error);
   }
 }
 
 function isValidSaveData(saveData) {
-  return Boolean(
-    saveData
-    && typeof saveData === 'object'
-    && Number.isFinite(saveData.day)
-    && Number.isFinite(saveData.cash)
-    && Array.isArray(saveData.inventory)
-    && Array.isArray(saveData.logs)
-  );
+  return Boolean(saveData && typeof saveData === 'object' && Number.isFinite(saveData.day) && Number.isFinite(saveData.cash) && Array.isArray(saveData.inventory));
 }
 
 function hydrateSaveData(saveData) {
-  if (!isValidSaveData(saveData)) {
-    throw new Error('存档缺少必要字段');
-  }
-
+  if (!isValidSaveData(saveData)) throw new Error('存档缺少必要字段');
   return {
     ...createInitialGameState(),
     ...saveData,
@@ -473,17 +305,13 @@ function hydrateSaveData(saveData) {
 function loadSavedGame() {
   try {
     const rawSave = localStorage.getItem(STORAGE_KEY);
-    if (!rawSave) {
-      return false;
-    }
-
-    const saveData = hydrateSaveData(JSON.parse(rawSave));
-    Object.assign(gameState, saveData);
+    if (!rawSave) return false;
+    Object.assign(gameState, hydrateSaveData(JSON.parse(rawSave)));
     updateSaveStatus('已恢复上次进度');
     return true;
   } catch (error) {
     localStorage.removeItem(STORAGE_KEY);
-    updateSaveStatus('存档损坏，已重开新局');
+    updateSaveStatus('存档损坏，已重开');
     console.error('读取游戏存档失败', error);
     return false;
   }
@@ -494,141 +322,145 @@ function clearSavedGame() {
   updateSaveStatus('存档已清除');
 }
 
-function getNextPlayerBidText() {
-  const amounts = [...document.querySelectorAll('[data-bid-amount]')]
-    .map((button) => Number(button.dataset.bidAmount))
-    .filter((amount) => gameState.currentPrice + amount <= gameState.cash);
-
-  if (gameState.gameOver || gameState.hasPassed || gameState.auctionEnded || gameState.inventory.length >= gameState.inventoryLimit || amounts.length === 0) {
-    return '无法加价';
-  }
-
-  return `+${formatCurrency(Math.min(...amounts)).replace('￥', '￥')}`;
-}
-
-function getAuctionStatusText() {
-  if (gameState.gameOver) {
-    return '挑战结束';
-  }
-
-  if (gameState.auctionEnded) {
-    return '已落槌';
-  }
-
-  if (gameState.hasPassed) {
-    return '已放弃';
-  }
-
-  if (gameState.inventory.length >= gameState.inventoryLimit) {
-    return '库存已满';
-  }
-
-  return '竞价中';
-}
-
-function renderPlayerActions() {
-  const inventoryFull = gameState.inventory.length >= gameState.inventoryLimit;
-  document.querySelectorAll('[data-bid-amount]').forEach((button) => {
-    const bidAmount = Number(button.dataset.bidAmount);
-    const nextPrice = gameState.currentPrice + bidAmount;
-    button.disabled = gameState.gameOver || gameState.hasPassed || gameState.auctionEnded || inventoryFull || nextPrice > gameState.cash;
-  });
-
-  document.querySelector('#passButton').disabled = gameState.gameOver || gameState.hasPassed || gameState.auctionEnded;
-  document.querySelector('#nextBidText').textContent = getNextPlayerBidText();
-  document.querySelector('#auctionStatusText').textContent = getAuctionStatusText();
-
-  const nextItemButton = document.querySelector('#nextItemButton');
-  nextItemButton.disabled = gameState.gameOver || !gameState.auctionEnded;
-  nextItemButton.textContent = gameState.day < gameState.totalDays && gameState.lotsSeenToday >= gameState.lotsPerDay
-    ? '下一天'
-    : '下一件';
-}
-
 function renderWealthProgress() {
   const ratio = Math.min(gameState.cash / gameState.targetCash, 1);
   const gap = Math.max(gameState.targetCash - gameState.cash, 0);
   const percent = Math.round(ratio * 100);
-
-  document.querySelector('#targetGapText').textContent = gap > 0
-    ? `距离捡漏之王还差 ${formatCurrency(gap)}`
-    : '现金目标已达成，守住胜局。';
-  document.querySelector('#wealthProgressText').textContent = `财富进度：${formatCurrency(gameState.cash)} / ${formatCurrency(gameState.targetCash)}`;
+  document.querySelector('#targetGapText').textContent = gap > 0 ? `差 ${formatCurrency(gap)}` : '已达标';
+  document.querySelector('#wealthProgressText').textContent = `${formatCurrency(gameState.cash)} / ${formatCurrency(gameState.targetCash)}`;
   document.querySelector('#wealthProgressPercent').textContent = `${percent}%`;
   document.querySelector('#wealthProgressBar').style.width = `${percent}%`;
 }
 
+function getAuctionStatusLabel() {
+  if (gameState.gameOver) return '挑战结束';
+  if (gameState.auctionEnded) return '已落槌';
+  if (gameState.hasPassed) return '已收手';
+  return '暂无领先';
+}
+
+function renderInventory() {
+  const inventoryList = document.querySelector('#inventoryList');
+  if (gameState.inventory.length === 0) {
+    inventoryList.innerHTML = '<li class="empty-state">暂无库存。拍下后可以选择放入库存。</li>';
+    return;
+  }
+
+  inventoryList.innerHTML = gameState.inventory.map((entry, index) => `
+    <li class="inventory-entry ${entry.item.category === gameState.hotCategory ? 'hot-inventory' : ''}">
+      <div>
+        <strong>${entry.item.name}</strong>
+        <span>买入 ${formatCurrency(entry.purchasePrice)} · 鉴定 ${formatCurrency(entry.item.realValue)}</span>
+        <span class="sale-line ${getSaleProfitClass(entry)}">报价 ${formatCurrency(entry.salePrice)} · ${getSaleProfitText(entry)}</span>
+      </div>
+      <button type="button" class="sell-button" data-sell-index="${index}" ${gameState.gameOver ? 'disabled' : ''}>卖出</button>
+    </li>
+  `).join('');
+}
+
+function renderSettlement() {
+  const pending = gameState.pendingSettlement;
+  const settlementView = document.querySelector('#settlementView');
+  const auctionView = document.querySelector('#auctionView');
+  settlementView.hidden = !gameState.auctionEnded || !pending;
+  auctionView.hidden = gameState.auctionEnded && Boolean(pending);
+
+  if (!pending) return;
+
+  const { type, entry, winner, price, item } = pending;
+  const won = type === 'won';
+  document.querySelector('#stageTitle').textContent = won ? '这单怎么处理？' : '这件已经结束';
+  document.querySelector('#stageEyebrow').textContent = 'Settlement';
+  document.querySelector('#settlementTitle').textContent = won ? (getProfitAmount(entry) >= 0 ? '捡漏成功' : '打眼了') : '没买到，也不亏';
+  document.querySelector('#settlementSummary').textContent = won
+    ? `你以 ${formatCurrency(entry.purchasePrice)} 拍下「${entry.item.name}」。现在决定卖掉还是放进库存。`
+    : `${winner} 以 ${formatCurrency(price)} 拍走「${item.name}」。`;
+  document.querySelector('#settlementPrice').textContent = formatCurrency(price);
+  document.querySelector('#settlementValue').textContent = won ? formatCurrency(entry.item.realValue) : '未鉴定';
+  document.querySelector('#settlementProfit').textContent = won ? getProfitText(entry) : '现金不变';
+  document.querySelector('#settlementSale').textContent = won ? `${formatCurrency(entry.salePrice)} · ${getSaleProfitText(entry)}` : '无';
+}
+
+function renderPlayerActions() {
+  const inSettlement = gameState.auctionEnded && Boolean(gameState.pendingSettlement) && !gameState.gameOver;
+  document.querySelector('#auctionActions').hidden = inSettlement || gameState.gameOver;
+  document.querySelector('#settlementActions').hidden = !inSettlement;
+
+  const inventoryFull = gameState.inventory.length >= gameState.inventoryLimit;
+  document.querySelectorAll('[data-bid-amount]').forEach((button) => {
+    const nextPrice = gameState.currentPrice + Number(button.dataset.bidAmount);
+    button.disabled = gameState.gameOver || gameState.hasPassed || gameState.auctionEnded || inventoryFull || nextPrice > gameState.cash;
+  });
+  document.querySelector('#passButton').disabled = gameState.gameOver || gameState.hasPassed || gameState.auctionEnded;
+
+  const pending = gameState.pendingSettlement;
+  const won = pending?.type === 'won';
+  document.querySelector('#sellNowButton').hidden = !won;
+  document.querySelector('#keepItemButton').hidden = !won;
+  document.querySelector('#nextItemButton').querySelector('strong').textContent = gameState.day < gameState.totalDays && gameState.lotsSeenToday >= gameState.lotsPerDay ? '下一天' : '下一件';
+
+  if (gameState.gameOver) {
+    document.querySelector('#stepHint').textContent = '挑战已结束，可以在设置里重新开始。';
+  } else if (inSettlement) {
+    document.querySelector('#stepHint').textContent = won ? '拍卖结束：现在只处理这单，卖掉或放库存。' : '这件结束了，继续下一件。';
+  } else {
+    document.querySelector('#stepHint').textContent = '当前阶段：买不买。只需要决定加价还是收手。';
+  }
+}
+
 function renderState() {
   document.querySelector('#dayText').textContent = `第 ${gameState.day}/${gameState.totalDays} 天 · 第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`;
-  document.querySelector('#stepText').textContent = `第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件`;
+  document.querySelector('#stepText').textContent = `第 ${gameState.lotsSeenToday || 1}/${gameState.lotsPerDay} 件`;
   document.querySelector('#cashText').textContent = formatCurrency(gameState.cash);
   document.querySelector('#inventoryText').textContent = `${gameState.inventory.length} / ${gameState.inventoryLimit}`;
-  document.querySelector('#hotCategoryText').textContent = `${gameState.hotCategory} ↑`;
+  document.querySelector('#hotCategoryText').textContent = gameState.hotCategory;
   document.querySelector('#currentPriceText').textContent = formatCurrency(gameState.currentPrice);
-  document.querySelector('#leaderText').textContent = gameState.leader;
+  document.querySelector('#leaderText').textContent = gameState.leader === '暂无' ? getAuctionStatusLabel() : `${gameState.leader} 领先`;
+  document.querySelector('#stageTitle').textContent = gameState.auctionEnded && gameState.pendingSettlement ? document.querySelector('#stageTitle').textContent : '现在买不买？';
+  document.querySelector('#stageEyebrow').textContent = gameState.auctionEnded && gameState.pendingSettlement ? 'Settlement' : 'Current Lot';
   renderWealthProgress();
   updateSaveStatus(gameState.saveStatus);
-  renderDecisionHints(gameState.currentItem);
+  if (gameState.currentItem) renderDecisionHints(gameState.currentItem);
   renderNpcs();
   renderInventory();
-  renderAppraisal();
+  renderRecentEvent();
+  renderSettlement();
   renderPlayerActions();
 }
 
 function settleAuction() {
-  if (gameState.settlementDone) {
-    return;
-  }
-
+  if (gameState.settlementDone) return;
   gameState.settlementDone = true;
 
   if (gameState.leader === '你') {
-    if (gameState.inventory.length >= gameState.inventoryLimit) {
-      addLog('库存已满，无法拿下这件拍品。');
-    } else {
-      gameState.cash -= gameState.currentPrice;
-      const inventoryEntry = {
-        item: gameState.currentItem,
-        purchasePrice: gameState.currentPrice,
-        salePrice: calculateSalePrice(gameState.currentItem),
-      };
-      gameState.inventory.push(inventoryEntry);
-      renderDealSpotlight(inventoryEntry);
-      addLog(`落槌！你以 ${formatCurrency(gameState.currentPrice)} 拍下「${gameState.currentItem.name}」，物品已入库。`);
-      addLog(`鉴定完成：真实价值 ${formatCurrency(gameState.currentItem.realValue)}，${getProfitText(inventoryEntry)}。`);
-    }
+    const entry = {
+      item: gameState.currentItem,
+      purchasePrice: gameState.currentPrice,
+      salePrice: calculateSalePrice(gameState.currentItem),
+    };
+    gameState.pendingSettlement = { type: 'won', entry, price: gameState.currentPrice, item: gameState.currentItem, winner: '你' };
+    addLog(`落槌！你以 ${formatCurrency(gameState.currentPrice)} 拍下「${gameState.currentItem.name}」。`);
   } else if (gameState.leader !== '暂无') {
+    gameState.pendingSettlement = { type: 'lost', winner: gameState.leader, price: gameState.currentPrice, item: gameState.currentItem };
     addLog(`落槌！${gameState.leader} 以 ${formatCurrency(gameState.currentPrice)} 拍走「${gameState.currentItem.name}」。`);
   } else {
+    gameState.pendingSettlement = { type: 'lost', winner: '无人', price: gameState.currentPrice, item: gameState.currentItem };
     addLog(`流拍：「${gameState.currentItem.name}」没人拿下。`);
-  }
-
-  if (gameState.day === gameState.totalDays && gameState.lotsSeenToday >= gameState.lotsPerDay) {
-    endGame();
   }
 }
 
 function maybeEndAuction() {
   const activeNpcs = gameState.npcs.filter((npc) => npc.active);
   const npcCanOutbidPlayer = activeNpcs.some((npc) => gameState.leader === '你' && gameState.currentPrice + 50 <= npc.maxBid);
-  if (activeNpcs.length > 0 && !gameState.hasPassed && gameState.leader !== '你') {
-    return;
-  }
-
-  if (activeNpcs.length > 0 && npcCanOutbidPlayer) {
-    return;
-  }
-
+  if (activeNpcs.length > 0 && !gameState.hasPassed && gameState.leader !== '你') return;
+  if (activeNpcs.length > 0 && npcCanOutbidPlayer) return;
   gameState.auctionEnded = true;
   settleAuction();
   renderState();
 }
 
 function runNpcBiddingRound() {
-  if (gameState.auctionEnded) {
-    return;
-  }
-
+  if (gameState.auctionEnded) return;
   const activeNpcs = gameState.npcs.filter((npc) => npc.active);
   if (activeNpcs.length === 0) {
     maybeEndAuction();
@@ -642,119 +474,123 @@ function runNpcBiddingRound() {
       leader: gameState.leader,
       cash: gameState.cash,
     });
-
     if (!decision.shouldBid) {
       addLog(`${npc.name}：${decision.reason}。`);
       continue;
     }
-
     gameState.currentPrice = decision.nextPrice;
     gameState.leader = npc.name;
     addLog(`${npc.name} ${decision.reason}，加价到 ${formatCurrency(gameState.currentPrice)}。`);
   }
-
   maybeEndAuction();
   renderState();
 }
 
 function placePlayerBid(increment) {
-  if (gameState.hasPassed) {
-    addLog('你已经放弃这件拍品，不能继续出价。');
-    return;
-  }
-
-  if (gameState.auctionEnded) {
-    addLog('这件拍品的竞价已经结束。');
-    return;
-  }
-
+  if (gameState.hasPassed || gameState.auctionEnded || gameState.gameOver) return;
   if (gameState.inventory.length >= gameState.inventoryLimit) {
-    addLog('库存已满，不能继续拍下新物品。');
+    addLog('库存已满，先卖出一件再拍。');
     renderState();
     return;
   }
-
   const nextPrice = gameState.currentPrice + increment;
   if (nextPrice > gameState.cash) {
-    addLog(`现金不足：继续加价到 ${formatCurrency(nextPrice)} 会超过你当前现金 ${formatCurrency(gameState.cash)}。`);
+    addLog(`现金不足：加到 ${formatCurrency(nextPrice)} 会超过当前现金。`);
     renderState();
     return;
   }
-
   gameState.currentPrice = nextPrice;
   gameState.leader = '你';
-  addLog(`你加价 ${formatCurrency(increment)}，当前价格变为 ${formatCurrency(gameState.currentPrice)}。`);
+  addLog(`你加价 ${formatCurrency(increment)}，当前价 ${formatCurrency(gameState.currentPrice)}。`);
   renderState();
   runNpcBiddingRound();
 }
 
 function passCurrentItem() {
+  if (gameState.auctionEnded || gameState.gameOver) return;
   gameState.hasPassed = true;
-  addLog(`你放弃了「${gameState.currentItem.name}」。`);
+  addLog(`你收手，不追「${gameState.currentItem.name}」。`);
   runNpcBiddingRound();
-
   if (!gameState.auctionEnded) {
     gameState.auctionEnded = true;
     settleAuction();
   }
-
   renderState();
 }
 
+function finishSettlement() {
+  gameState.pendingSettlement = null;
+  if (gameState.day === gameState.totalDays && gameState.lotsSeenToday >= gameState.lotsPerDay) {
+    endGame();
+    renderState();
+    return;
+  }
+  loadNextItem();
+}
+
+function sellPendingNow() {
+  const entry = gameState.pendingSettlement?.entry;
+  if (!entry) return;
+  gameState.cash += entry.salePrice;
+  addLog(`立即卖出「${entry.item.name}」，收入 ${formatCurrency(entry.salePrice)}，${getSaleProfitText(entry)}。`);
+  finishSettlement();
+}
+
+function keepPendingItem() {
+  const entry = gameState.pendingSettlement?.entry;
+  if (!entry) return;
+  if (entry.purchasePrice > gameState.cash) {
+    addLog('现金不足，不能放入库存。请直接卖出。');
+    renderState();
+    return;
+  }
+  if (gameState.inventory.length >= gameState.inventoryLimit) {
+    addLog('库存已满，不能放入库存。请直接卖出。');
+    renderState();
+    return;
+  }
+  gameState.cash -= entry.purchasePrice;
+  gameState.inventory.push(entry);
+  addLog(`放入库存：「${entry.item.name}」。现金扣除 ${formatCurrency(entry.purchasePrice)}。`);
+  finishSettlement();
+}
+
 function sellInventoryItem(index) {
-  if (gameState.gameOver) {
-    addLog('挑战已结束，不能继续出售库存。');
-    return;
-  }
-
+  if (gameState.gameOver) return;
   const entry = gameState.inventory[index];
-  if (!entry) {
-    return;
-  }
-
+  if (!entry) return;
   gameState.cash += entry.salePrice;
   gameState.inventory.splice(index, 1);
-
-  const netProfit = entry.salePrice - entry.purchasePrice;
-  const resultText = netProfit >= 0
-    ? `净赚 ${formatCurrency(netProfit)}`
-    : `净亏 ${formatCurrency(Math.abs(netProfit))}`;
-
-  addLog(`快速出售「${entry.item.name}」，收入 ${formatCurrency(entry.salePrice)}，${resultText}。`);
+  addLog(`卖出库存「${entry.item.name}」，收入 ${formatCurrency(entry.salePrice)}，${getSaleProfitText(entry)}。`);
   renderState();
+}
+
+function rerollInventorySalePrices(reason = '市场热度变化') {
+  gameState.inventory.forEach((entry) => { entry.salePrice = calculateSalePrice(entry.item); });
+  if (gameState.inventory.length > 0) addLog(`${reason}，库存报价已刷新。`);
 }
 
 function startNewMarketDay(isFirstDay = false) {
   gameState.lastHotCategory = gameState.hotCategory;
   gameState.hotCategory = pickDailyHotCategory();
-
   if (isFirstDay) {
-    addLog(`今日市场热点：${gameState.hotCategory}。${getMarketReport(gameState.hotCategory)}`);
+    addLog(`今日热点：${gameState.hotCategory}。${getMarketReport(gameState.hotCategory)}`);
     return;
   }
-
-  addLog(`第 ${gameState.day} 天开场，大湾区各路货源开始上台。`);
-  addLog(`今日市场热点切换为：${gameState.hotCategory}。${getMarketReport(gameState.hotCategory)}`);
+  addLog(`第 ${gameState.day} 天开场。今日热点：${gameState.hotCategory}。`);
   rerollInventorySalePrices('新一天行情变动');
 }
 
 function advanceDayIfNeeded() {
-  if (gameState.lotsSeenToday < gameState.lotsPerDay) {
-    return;
-  }
-
+  if (gameState.lotsSeenToday < gameState.lotsPerDay) return;
   gameState.day += 1;
   gameState.lotsSeenToday = 0;
   startNewMarketDay(false);
 }
 
 function loadNextItem() {
-  if (gameState.gameOver) {
-    return;
-  }
-
+  if (gameState.gameOver) return;
   advanceDayIfNeeded();
-
   if (gameState.day > gameState.totalDays) {
     endGame();
     renderState();
@@ -770,8 +606,8 @@ function loadNextItem() {
   gameState.hasPassed = false;
   gameState.auctionEnded = false;
   gameState.settlementDone = false;
+  gameState.pendingSettlement = null;
 
-  hideDealSpotlight();
   renderItem(gameState.currentItem);
   renderState();
   addLog(`第 ${gameState.day} 天第 ${gameState.lotsSeenToday}/${gameState.lotsPerDay} 件：「${gameState.currentItem.name}」上台。`);
@@ -786,22 +622,22 @@ function renderGameResult() {
   const finalAssets = gameState.cash + inventoryValue;
   const isWin = gameState.cash >= gameState.targetCash;
   const resultPanel = document.querySelector('#resultPanel');
-  const resultContent = document.querySelector('#resultContent');
-
   resultPanel.hidden = false;
   resultPanel.classList.toggle('win', isWin);
   resultPanel.classList.toggle('loss', !isWin);
-  resultContent.innerHTML = `
+  document.querySelector('#auctionView').hidden = true;
+  document.querySelector('#settlementView').hidden = true;
+  document.querySelector('#stageTitle').textContent = '挑战结束';
+  document.querySelector('#resultContent').innerHTML = `
     <p class="result-title">${isWin ? '挑战成功！你成了捡漏之王。' : '挑战结束，现金目标还差一点。'}</p>
     <dl>
       <div><dt>最终现金</dt><dd>${formatCurrency(gameState.cash)}</dd></div>
-      <div><dt>库存快速出售估值</dt><dd>${formatCurrency(inventoryValue)}</dd></div>
+      <div><dt>库存报价</dt><dd>${formatCurrency(inventoryValue)}</dd></div>
       <div><dt>最终资产</dt><dd>${formatCurrency(finalAssets)}</dd></div>
       <div><dt>现金目标</dt><dd>${formatCurrency(gameState.targetCash)}</dd></div>
     </dl>
   `;
-
-  return { inventoryValue, finalAssets };
+  return { finalAssets };
 }
 
 function endGame() {
@@ -809,23 +645,19 @@ function endGame() {
     renderGameResult();
     return;
   }
-
   gameState.gameOver = true;
   gameState.auctionEnded = true;
-
   const { finalAssets } = renderGameResult();
-
-  addLog(`7 天挑战结束：最终现金 ${formatCurrency(gameState.cash)}，最终资产 ${formatCurrency(finalAssets)}。`);
+  addLog(`7 天结束：现金 ${formatCurrency(gameState.cash)}，资产 ${formatCurrency(finalAssets)}。`);
 }
 
 function resetGame() {
   clearSavedGame();
   Object.assign(gameState, createInitialGameState());
-
   document.querySelector('#resultPanel').hidden = true;
-  document.querySelector('#resultPanel').classList.remove('win', 'loss');
-  hideDealSpotlight();
-  renderStepStatus();
+  document.querySelector('#auctionView').hidden = false;
+  document.querySelector('#settlementView').hidden = true;
+  document.querySelector('#inventoryDrawer').hidden = true;
   renderLogs();
   startNewMarketDay(true);
   loadNextItem();
@@ -834,45 +666,35 @@ function resetGame() {
 
 function bindPlayerActions() {
   document.querySelectorAll('[data-bid-amount]').forEach((button) => {
-    button.addEventListener('click', () => {
-      placePlayerBid(Number(button.dataset.bidAmount));
-    });
+    button.addEventListener('click', () => placePlayerBid(Number(button.dataset.bidAmount)));
   });
-
   document.querySelector('#passButton').addEventListener('click', passCurrentItem);
-  document.querySelector('#nextItemButton').addEventListener('click', loadNextItem);
-  document.querySelectorAll('[data-restart-game]').forEach((button) => {
-    button.addEventListener('click', resetGame);
+  document.querySelector('#sellNowButton').addEventListener('click', sellPendingNow);
+  document.querySelector('#keepItemButton').addEventListener('click', keepPendingItem);
+  document.querySelector('#nextItemButton').addEventListener('click', finishSettlement);
+  document.querySelectorAll('[data-restart-game]').forEach((button) => button.addEventListener('click', resetGame));
+  document.querySelector('#inventoryToggle').addEventListener('click', () => { document.querySelector('#inventoryDrawer').hidden = false; });
+  document.querySelector('#inventoryClose').addEventListener('click', () => { document.querySelector('#inventoryDrawer').hidden = true; });
+  document.querySelector('#inventoryDrawer').addEventListener('click', (event) => {
+    if (event.target.id === 'inventoryDrawer') document.querySelector('#inventoryDrawer').hidden = true;
   });
   document.querySelector('#inventoryList').addEventListener('click', (event) => {
     const sellButton = event.target.closest('[data-sell-index]');
-    if (!sellButton) {
-      return;
-    }
-
-    sellInventoryItem(Number(sellButton.dataset.sellIndex));
+    if (sellButton) sellInventoryItem(Number(sellButton.dataset.sellIndex));
   });
 }
 
 function initGame() {
-  if (!Array.isArray(AUCTION_ITEMS) || AUCTION_ITEMS.length === 0) {
-    throw new Error('拍品数据为空，无法开始拍卖。');
-  }
-
-  renderStepStatus();
+  if (!Array.isArray(AUCTION_ITEMS) || AUCTION_ITEMS.length === 0) throw new Error('拍品数据为空，无法开始拍卖。');
   bindPlayerActions();
-
   if (loadSavedGame() && gameState.currentItem) {
     renderItem(gameState.currentItem);
     renderLogs();
     renderState();
-    if (gameState.gameOver) {
-      endGame();
-    }
+    if (gameState.gameOver) endGame();
     addLog('已恢复本地进度。', { skipSave: true });
     return;
   }
-
   renderLogs();
   startNewMarketDay(true);
   loadNextItem();
