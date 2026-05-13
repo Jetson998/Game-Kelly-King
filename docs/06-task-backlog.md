@@ -245,7 +245,7 @@
 
 ## 当前推荐下一步
 
-阶段 7 / Step 7.3：音效开关；或先做 GitHub Pages / Netlify 发布部署。
+阶段 7 已完成。当前推荐下一步：GitHub Pages / Netlify 发布部署；或阶段 8 做可视化引导与新手教程。
 
 
 ## 阶段 7：体验增强
@@ -258,5 +258,7 @@
   - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：竞价、收手、落槌、成交、流拍和变现有轻量视觉反馈，并尊重 `prefers-reduced-motion`
   - 步骤位置：阶段 7 / Step 7.2（2/3）
-- [ ] Step 7.3 音效开关
-  - 验收：提供可关闭的点击、加价、落槌、结算音效
+- [x] Step 7.3 音效开关
+  - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 验收：提供可关闭的点击、加价、落槌、结算音效，设置会随 localStorage 保存
+  - 步骤位置：阶段 7 / Step 7.3（3/3）

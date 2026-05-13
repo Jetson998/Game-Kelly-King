@@ -816,3 +816,37 @@
 - `git diff --check`
 - 本地静态页面 `curl` 检查
 - VM smoke test：动画辅助函数可在模拟 DOM 下调用
+
+### Step 7.3 音效开关
+
+步骤位置：阶段 7 / Step 7.3（3/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 设置菜单新增“音效：开/关”按钮，状态会写入 localStorage
+- 用 Web Audio API 生成轻量合成音，不依赖外部音频资源
+- 加价、NPC 跟价、收手、落槌、成交、流拍、立即变现、库存卖出和下一件都有短音效反馈
+- 存档 key 升到 `kelly-king-save-v9`，避免旧存档缺少音效设置字段
+- 音效默认开启，但用户可随时关闭；浏览器不支持 Web Audio 时静默降级，不影响玩法
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地页面 `curl` 检查：设置菜单包含 `音效：开`
+- 浏览器试玩：首次点击后音效可播放，关闭后不再播放，刷新后保留开关状态
+
+下一步建议：
+
+```text
+部署 GitHub Pages / Netlify；或阶段 8 做可视化引导与新手教程。
+```

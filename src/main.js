@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v8';
+const STORAGE_KEY = 'kelly-king-save-v9';
 const MAX_LOG_ENTRIES = 80;
 
 const BALANCE_CONFIG = {
@@ -54,10 +54,10 @@ const MARKET_EVENTS = [
 
 const INITIAL_GAME_STATE = {
   phase: 7,
-  step: '7.2',
-  stepIndex: 2,
+  step: '7.3',
+  stepIndex: 3,
   phaseStepTotal: 3,
-  stepName: '落槌与成交动画',
+  stepName: '音效开关',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -82,6 +82,7 @@ const INITIAL_GAME_STATE = {
   pendingSettlement: null,
   gameOver: false,
   saveStatus: '尚未保存',
+  soundEnabled: true,
   logs: ['第一件货已经上台。看估值和风险，决定要不要加价。'],
 };
 
@@ -323,6 +324,74 @@ function updateActionLock(locked) {
   document.querySelector('.primary-actions')?.classList.toggle('action-locked', locked);
 }
 
+
+let audioContext = null;
+
+const SOUND_PATTERNS = {
+  click: [{ frequency: 520, duration: 0.045, type: 'triangle', gain: 0.028 }],
+  bid: [
+    { frequency: 420, duration: 0.055, type: 'triangle', gain: 0.032 },
+    { frequency: 620, duration: 0.07, type: 'triangle', gain: 0.028, delay: 0.045 },
+  ],
+  hammer: [
+    { frequency: 150, duration: 0.08, type: 'square', gain: 0.035 },
+    { frequency: 92, duration: 0.12, type: 'sine', gain: 0.026, delay: 0.055 },
+  ],
+  success: [
+    { frequency: 520, duration: 0.07, type: 'sine', gain: 0.026 },
+    { frequency: 780, duration: 0.1, type: 'sine', gain: 0.028, delay: 0.07 },
+  ],
+  warning: [
+    { frequency: 260, duration: 0.09, type: 'sawtooth', gain: 0.024 },
+    { frequency: 190, duration: 0.1, type: 'sawtooth', gain: 0.02, delay: 0.075 },
+  ],
+};
+
+function getAudioContext() {
+  if (!gameState.soundEnabled) return null;
+  const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContextClass) return null;
+  if (!audioContext) audioContext = new AudioContextClass();
+  if (audioContext.state === 'suspended') audioContext.resume().catch(() => {});
+  return audioContext;
+}
+
+function playSound(name) {
+  if (!gameState.soundEnabled) return;
+  const context = getAudioContext();
+  const pattern = SOUND_PATTERNS[name];
+  if (!context || !pattern) return;
+
+  pattern.forEach((note) => {
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    const start = context.currentTime + (note.delay ?? 0);
+    const end = start + note.duration;
+    oscillator.type = note.type;
+    oscillator.frequency.setValueAtTime(note.frequency, start);
+    gain.gain.setValueAtTime(0.0001, start);
+    gain.gain.exponentialRampToValueAtTime(note.gain, start + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, end);
+    oscillator.connect(gain).connect(context.destination);
+    oscillator.start(start);
+    oscillator.stop(end + 0.02);
+  });
+}
+
+function renderSoundToggle() {
+  const button = document.querySelector('#soundToggle');
+  if (!button) return;
+  button.textContent = `音效：${gameState.soundEnabled ? '开' : '关'}`;
+  button.setAttribute('aria-pressed', String(gameState.soundEnabled));
+}
+
+function toggleSound() {
+  gameState.soundEnabled = !gameState.soundEnabled;
+  renderSoundToggle();
+  if (gameState.soundEnabled) playSound('click');
+  saveGame();
+}
+
 function updateSaveStatus(text) {
   gameState.saveStatus = text;
   const node = document.querySelector('#saveStatusText');
@@ -331,7 +400,7 @@ function updateSaveStatus(text) {
 
 function getSerializableGameState() {
   return {
-    version: 8,
+    version: 9,
     savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,
@@ -361,6 +430,7 @@ function getSerializableGameState() {
     settlementDone: gameState.settlementDone,
     pendingSettlement: gameState.pendingSettlement,
     gameOver: gameState.gameOver,
+    soundEnabled: gameState.soundEnabled,
     logs: gameState.logs,
   };
 }
@@ -390,6 +460,7 @@ function hydrateSaveData(saveData) {
     seenItemIds: Array.isArray(saveData.seenItemIds) ? saveData.seenItemIds : [],
     marketEvent: saveData.marketEvent ?? null,
     lastMarketEventId: saveData.lastMarketEventId ?? null,
+    soundEnabled: typeof saveData.soundEnabled === 'boolean' ? saveData.soundEnabled : true,
     logs: Array.isArray(saveData.logs) && saveData.logs.length > 0 ? saveData.logs : [...INITIAL_GAME_STATE.logs],
   };
 }
@@ -530,6 +601,7 @@ function renderState() {
   renderRecentEvent();
   renderSettlement();
   renderPlayerActions();
+  renderSoundToggle();
 }
 
 function settleAuction() {
@@ -546,16 +618,19 @@ function settleAuction() {
       salePrice: calculateSalePrice(gameState.currentItem),
     };
     gameState.pendingSettlement = { type: 'won', entry, price: gameState.currentPrice, item: gameState.currentItem, winner: '你' };
+    playSound('hammer');
     showToast(`落槌成交：你拍下 ${gameState.currentItem.name}`, 'success');
     playStagePulse('success');
     addLog(`落槌！你以 ${formatCurrency(gameState.currentPrice)} 拍下「${gameState.currentItem.name}」。`);
   } else if (gameState.leader !== '暂无') {
     gameState.pendingSettlement = { type: 'lost', winner: gameState.leader, price: gameState.currentPrice, item: gameState.currentItem };
+    playSound('hammer');
     showToast(`落槌：${gameState.leader} 拍走了`, 'warning');
     playStagePulse('warning');
     addLog(`落槌！${gameState.leader} 以 ${formatCurrency(gameState.currentPrice)} 拍走「${gameState.currentItem.name}」。`);
   } else {
     gameState.pendingSettlement = { type: 'lost', winner: '无人', price: gameState.currentPrice, item: gameState.currentItem };
+    playSound('warning');
     showToast('流拍：没人接手', 'warning');
     playStagePulse('warning');
     addLog(`流拍：「${gameState.currentItem.name}」没人拿下。`);
@@ -595,6 +670,7 @@ function runNpcBiddingRound() {
     gameState.leader = npc.name;
     playPriceBump();
     playStagePulse('bid');
+    playSound('bid');
     showToast(`${npc.name} 加价到 ${formatCurrency(gameState.currentPrice)}`, 'bid');
     addLog(`${npc.name} ${decision.reason}，加价到 ${formatCurrency(gameState.currentPrice)}。`);
   }
@@ -620,6 +696,7 @@ function placePlayerBid(increment) {
   updateAuctionMotion('bid');
   playPriceBump();
   playStagePulse('bid');
+  playSound('bid');
   showToast(`你加价到 ${formatCurrency(gameState.currentPrice)}`, 'bid');
   addLog(`你加价 ${formatCurrency(increment)}，当前价 ${formatCurrency(gameState.currentPrice)}。`);
   renderState();
@@ -629,6 +706,7 @@ function placePlayerBid(increment) {
 function passCurrentItem() {
   if (gameState.auctionEnded || gameState.gameOver) return;
   gameState.hasPassed = true;
+  playSound('click');
   showToast('收手观望', 'warning');
   updateAuctionMotion('pass');
   addLog(`你收手，不追「${gameState.currentItem.name}」。`);
@@ -657,6 +735,7 @@ function sellPendingNow() {
   const netCashChange = entry.salePrice - entry.purchasePrice;
   gameState.cash += netCashChange;
   gameState.dealHistory.push(createDealRecord(entry, 'sold-now'));
+  playSound(getSaleProfitClass(entry) === 'loss' ? 'warning' : 'success');
   showToast(getSaleProfitText(entry), getSaleProfitClass(entry) === 'loss' ? 'warning' : 'success');
   addLog(`立即卖出「${entry.item.name}」：成交扣款 ${formatCurrency(entry.purchasePrice)}，卖出收入 ${formatCurrency(entry.salePrice)}，${getSaleProfitText(entry)}。`);
   finishSettlement();
@@ -680,6 +759,7 @@ function keepPendingItem() {
   entry.dealId = record.id;
   gameState.dealHistory.push(record);
   gameState.inventory.push(entry);
+  playSound('success');
   showToast('已放入库存', 'success');
   addLog(`放入库存：「${entry.item.name}」。现金扣除 ${formatCurrency(entry.purchasePrice)}。`);
   finishSettlement();
@@ -692,6 +772,7 @@ function sellInventoryItem(index) {
   gameState.cash += entry.salePrice;
   updateInventoryDealStatus(entry, 'sold-inventory', entry.salePrice - entry.purchasePrice);
   gameState.inventory.splice(index, 1);
+  playSound(getSaleProfitClass(entry) === 'loss' ? 'warning' : 'success');
   addLog(`卖出库存「${entry.item.name}」，收入 ${formatCurrency(entry.salePrice)}，${getSaleProfitText(entry)}。`);
   renderState();
 }
@@ -940,8 +1021,9 @@ function endGame() {
 }
 
 function resetGame() {
+  const soundEnabled = gameState.soundEnabled;
   clearSavedGame();
-  Object.assign(gameState, createInitialGameState());
+  Object.assign(gameState, createInitialGameState(), { soundEnabled });
   document.querySelector('#resultPanel').hidden = true;
   document.querySelector('#auctionView').hidden = false;
   document.querySelector('#settlementView').hidden = true;
@@ -966,10 +1048,11 @@ function bindPlayerActions() {
   document.querySelector('#passButton').addEventListener('click', passCurrentItem);
   document.querySelector('#sellNowButton').addEventListener('click', sellPendingNow);
   document.querySelector('#keepItemButton').addEventListener('click', keepPendingItem);
-  document.querySelector('#nextItemButton').addEventListener('click', finishSettlement);
+  document.querySelector('#nextItemButton').addEventListener('click', () => { playSound('click'); finishSettlement(); });
   document.querySelectorAll('[data-restart-game]').forEach((button) => button.addEventListener('click', resetGame));
-  document.querySelector('#inventoryToggle').addEventListener('click', openInventory);
-  document.querySelector('#logToggle').addEventListener('click', openLog);
+  document.querySelector('#inventoryToggle').addEventListener('click', () => { playSound('click'); openInventory(); });
+  document.querySelector('#logToggle').addEventListener('click', () => { playSound('click'); openLog(); });
+  document.querySelector('#soundToggle').addEventListener('click', toggleSound);
   document.querySelector('#inventoryClose').addEventListener('click', () => { document.querySelector('#inventoryDrawer').hidden = true; });
   document.querySelector('#inventoryDrawer').addEventListener('click', (event) => {
     if (event.target.id === 'inventoryDrawer') document.querySelector('#inventoryDrawer').hidden = true;
