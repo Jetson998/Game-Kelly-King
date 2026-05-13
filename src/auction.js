@@ -89,7 +89,7 @@ function getRookieDecision(npc, currentPrice, context) {
     return {
       shouldBid: false,
       reason: pickOne([
-        '突然清醒了，心理价到顶，选择放弃',
+        '突然冷静下来，心理价到顶，选择放弃',
         '手心冒汗，还是不敢再追',
         '算了算钱包，决定先撤',
       ]),
@@ -101,7 +101,7 @@ function getRookieDecision(npc, currentPrice, context) {
     shouldBid: true,
     increment: jumpIncrement,
     nextPrice,
-    reason: jumpIncrement > baseIncrement ? '上头跳价' : '跟着感觉加价',
+    reason: jumpIncrement > baseIncrement ? '被翻身机会勾住，直接跳价' : '跟着感觉加价',
   };
 }
 
@@ -144,7 +144,7 @@ function getShillDecision(npc, currentPrice, context) {
       reason: pickOne([
         '抬得差不多了，忽然装作没兴趣',
         '看你还在场，笑了笑就收手',
-        '价格被顶起来后，立刻闭麦',
+        '价格被顶起来后，马上安静下来',
       ]),
     };
   }
@@ -168,7 +168,7 @@ function getShillDecision(npc, currentPrice, context) {
     shouldBid: true,
     increment,
     nextPrice,
-    reason: increment > baseIncrement ? '故意跳价带节奏' : '积极推高价格',
+    reason: increment > baseIncrement ? '故意跳价带节奏' : '慢慢推高价格',
   };
 }
 

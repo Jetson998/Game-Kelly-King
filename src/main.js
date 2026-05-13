@@ -28,7 +28,7 @@ const INITIAL_GAME_STATE = {
   cash: BALANCE_CONFIG.startingCash,
   inventory: [],
   inventoryLimit: BALANCE_CONFIG.inventoryLimit,
-  hotCategory: '相机',
+  hotCategory: '华强北电子货',
   lastHotCategory: null,
   currentPrice: 0,
   leader: '暂无',
@@ -41,8 +41,8 @@ const INITIAL_GAME_STATE = {
   gameOver: false,
   saveStatus: '尚未保存',
   logs: [
-    '欢迎来到跳蚤市场，第一件拍品已经上台。',
-    '当前步骤：阶段 5 / Step 5.1（1/2）浏览器试玩与问题修复。',,
+    '欢迎来到大湾区流动拍场，第一件货已经上台。',
+    '当前步骤：阶段 5 / Step 5.1（1/2）浏览器试玩与问题修复。',
   ],
 };
 
@@ -96,15 +96,11 @@ function pickDailyHotCategory() {
 
 function getMarketReport(category) {
   const reports = {
-    '电子产品': '旧设备回收商今天进场，能开机的电子货更容易卖掉。',
-    '相机': '摄影圈突然来人扫货，镜头和胶片机报价被抬高。',
-    '手表': '礼品回收摊缺货，表类今天有人愿意加价收。',
-    '球鞋': '潮流买家扎堆，热门尺码的鞋会被多看两眼。',
-    '手办': '收藏群里有人补款，绝版和热门角色更吃香。',
-    '收藏品': '老物件摊位人气高，纪念币和怀旧玩具流动性变好。',
-    '唱片': '黑胶/CD 玩家今天很活跃，有故事的唱片更容易成交。',
-    '古董': '古玩客多了，但坑也更多，价格波动会被放大。',
-    '神秘货': '赌箱氛围起来了，大家对未知纸箱格外上头。',
+    '华强北电子货': '华强北档口今天有人扫货，能开机、能修、能拆件的电子货更容易出手。',
+    '坂田仓库尾货': '坂田仓库清货消息传开，封条箱和退仓货都被多看两眼。',
+    '港货回流': '香港回流货有人接，老相机、唱片和小件硬货报价被抬高。',
+    '澳门高端局散货': '澳门那边有一批高端局散货流出来，表、铜器和小件最容易让人上头。',
+    '广州旧档口': '广州旧档口今天人气旺，老物件真假混着来，价差也被放大。',
   };
 
   return reports[category] ?? `${category} 今天更受关注，报价和竞价都会更激进。`;
@@ -166,29 +162,29 @@ function getNpcMindHint(npc) {
 
   if (npc.id === 'rookie') {
     if (likesCategory || item.rarity === 'rare' || item.rarity === 'epic') {
-      return `${pressure}：他明显心动，可能会冲动跳价；别被他的热情带偏。`;
+      return `${pressure}：阿杰已经开始幻想这一单翻身，可能会冲动跳价；别被他的情绪带偏。`;
     }
     if (avoidsCategory) {
-      return `${pressure}：他对这类货没那么懂，跟价参考价值偏低。`;
+      return `${pressure}：阿杰不太懂这一路货色，跟价参考价值偏低。`;
     }
-    return `${pressure}：他更多靠感觉出价，价格越热闹越容易失控。`;
+    return `${pressure}：阿杰多半凭感觉出价，场面越热越容易失了分寸。`;
   }
 
   if (npc.id === 'dealer') {
     if (likesCategory || item.category === gameState.hotCategory) {
-      return `${pressure}：他还在算转卖空间；他持续跟价通常说明这件货不差。`;
+      return `${pressure}：老周还在算转手空间；他肯跟，通常说明这货不是纯垃圾。`;
     }
     if (avoidsCategory) {
-      return `${pressure}：他不爱碰这类风险货，早退不一定代表东西差。`;
+      return `${pressure}：老周不爱沾这类风险货，早退不一定代表东西差。`;
     }
-    return `${pressure}：他只看利润，撤退时多半是价格已经不香。`;
+    return `${pressure}：老周只认利润，他收手时，多半是价格已经不香。`;
   }
 
   if (npc.id === 'shill') {
     if (likesCategory) {
-      return `${pressure}：他在这种题材上最会带节奏，可能是在诱你多加一口。`;
+      return `${pressure}：马哥越轻松越要小心，他可能正等你多加一口。`;
     }
-    return `${pressure}：他未必真想买，重点是观察他什么时候突然收手。`;
+    return `${pressure}：他未必真想买，重点是看他什么时候突然收手。`;
   }
 
   return `${pressure}：${npc.tell}`;
@@ -645,7 +641,7 @@ function startNewMarketDay(isFirstDay = false) {
     return;
   }
 
-  addLog(`第 ${gameState.day} 天开场，新的摊位开始上货。`);
+  addLog(`第 ${gameState.day} 天开场，大湾区各路货源开始上台。`);
   addLog(`今日市场热点切换为：${gameState.hotCategory}。${getMarketReport(gameState.hotCategory)}`);
   rerollInventorySalePrices('新一天行情变动');
 }
@@ -739,7 +735,7 @@ function resetGame() {
   renderLogs();
   startNewMarketDay(true);
   loadNextItem();
-  addLog('NPC 已入场。你每次出价后，他们会按心理价决定是否跟价。');
+  addLog('阿杰、老周和马哥已入场。你每次出价后，他们会按心理价决定是否跟价。');
 }
 
 function bindPlayerActions() {
@@ -786,7 +782,7 @@ function initGame() {
   renderLogs();
   startNewMarketDay(true);
   loadNextItem();
-  addLog('NPC 已入场。你每次出价后，他们会按心理价决定是否跟价。');
+  addLog('阿杰、老周和马哥已入场。你每次出价后，他们会按心理价决定是否跟价。');
 }
 
 initGame();
