@@ -1146,3 +1146,26 @@
 - `node --check main.js auction.js data/items.js data/npcs.js src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
 - 本地页面确认标题为“湾区收买佬”，移动端底部主按钮保持可点击
+
+### 手机端适配体验修复（2026-05-13）
+
+完成文件：
+
+- `src/index.html`
+- `src/styles.css`
+- `src/main.js`
+
+完成内容：
+
+- 针对 375px 手机宽度重新压缩首屏，隐藏发布页介绍/反馈卡，优先展示状态、拍品和主操作
+- 顶部改成吸顶轻导航，库存/日志增加手机快捷入口
+- 拍品卡片改为价格优先，描述、止损线、对手说明做截断，降低纵向拥挤
+- 标签与对手列表改为横向滑动卡片，减少一屏堆叠
+- 底部操作栏改为手机 App 式固定四按钮，安全区适配，按钮不再挤成两行占屏
+- 库存抽屉改为底部弹层，日志在手机端通过快捷入口展开，避免正文下方重复占位
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 以 375x812 手机视口打开本地页面，首屏应直接看到状态、当前价、拍品与底部操作栏

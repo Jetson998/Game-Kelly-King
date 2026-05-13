@@ -752,6 +752,7 @@ function renderState() {
   document.querySelector('#stepText').textContent = `第 ${gameState.lotsSeenToday || 1}/${gameState.lotsPerDay} 件`;
   document.querySelector('#cashText').textContent = formatCurrency(gameState.cash);
   document.querySelector('#inventoryText').textContent = `${gameState.inventory.length} / ${gameState.inventoryLimit}`;
+  document.querySelector('#inventoryTextMobile').textContent = `${gameState.inventory.length} / ${gameState.inventoryLimit}`;
   document.querySelector('#hotCategoryText').textContent = gameState.hotCategory;
   document.querySelector('#eventNameText').textContent = gameState.marketEvent?.name ?? '暂无风声';
   document.querySelector('#eventSummaryText').textContent = gameState.marketEvent?.summary ?? '今天场面平稳，照常看货出价。';
@@ -1341,6 +1342,8 @@ function bindPlayerActions() {
   document.querySelectorAll('[data-restart-game]').forEach((button) => button.addEventListener('click', resetGame));
   document.querySelector('#inventoryToggle').addEventListener('click', () => { playSound('click'); openInventory(); });
   document.querySelector('#logToggle').addEventListener('click', () => { playSound('click'); openLog(); });
+  document.querySelector('#inventoryToggleMobile')?.addEventListener('click', () => { playSound('click'); openInventory(); });
+  document.querySelector('#logToggleMobile')?.addEventListener('click', () => { playSound('click'); openLog(); });
   document.querySelector('#soundToggle').addEventListener('click', toggleSound);
   document.querySelector('#tutorialReplayButton').addEventListener('click', () => { playSound('click'); openTutorial(); });
   document.querySelector('#startPlayButton')?.addEventListener('click', () => {
