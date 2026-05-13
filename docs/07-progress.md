@@ -18,7 +18,6 @@
 完成文件：
 
 - `src/index.html`
-- `src/styles.css`
 - `src/main.js`
 
 完成内容：
@@ -141,7 +140,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 
 完成内容：
 
@@ -194,7 +192,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 
 完成内容：
 
@@ -235,7 +232,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 
 完成内容：
 
@@ -259,7 +255,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
 
@@ -309,7 +304,6 @@
 - `src/auction.js`
 - `src/main.js`
 - `src/index.html`
-- `src/styles.css`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
 
@@ -339,7 +333,6 @@
 
 - `src/main.js`
 - `src/index.html`
-- `src/styles.css`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
 
@@ -435,7 +428,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 
 完成内容：
 
@@ -512,7 +504,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
 
@@ -548,7 +539,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
 
@@ -589,7 +579,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
 
@@ -645,7 +634,6 @@
 - `docs/07-progress.md`
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 - `src/data/npcs.js`
 
 完成内容：
@@ -676,7 +664,6 @@
 - `src/index.html`
 - `src/main.js`
 - `src/auction.js`
-- `src/styles.css`
 - `README.md`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
@@ -742,7 +729,6 @@
 完成文件：
 
 - `src/main.js`
-- `src/styles.css`
 - `README.md`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
@@ -769,7 +755,6 @@
 完成文件：
 
 - `src/main.js`
-- `src/styles.css`
 - `README.md`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
@@ -796,7 +781,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 - `README.md`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
@@ -825,7 +809,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 - `README.md`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`

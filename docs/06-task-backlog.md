@@ -86,7 +86,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 - `docs/06-task-backlog.md`
 
 完成内容：
@@ -126,7 +125,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
 
@@ -154,7 +152,6 @@
 
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 - `docs/06-task-backlog.md`
 - `docs/07-progress.md`
 
@@ -208,7 +205,6 @@
 - `docs/07-progress.md`
 - `src/index.html`
 - `src/main.js`
-- `src/styles.css`
 - `src/data/npcs.js`
 
 完成内容：
@@ -255,10 +251,10 @@
   - 验收：挑战结束后根据现金、资产、库存、打眼次数和热点利用情况给出下局建议
   - 步骤位置：阶段 7 / Step 7.1（1/3）
 - [x] Step 7.2 落槌与成交动画
-  - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 文件：`src/index.html`, `src/main.js`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：竞价、收手、落槌、成交、流拍和变现有轻量视觉反馈，并尊重 `prefers-reduced-motion`
   - 步骤位置：阶段 7 / Step 7.2（2/3）
 - [x] Step 7.3 音效开关
-  - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 文件：`src/index.html`, `src/main.js`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：提供可关闭的点击、加价、落槌、结算音效，设置会随 localStorage 保存
   - 步骤位置：阶段 7 / Step 7.3（3/3）
