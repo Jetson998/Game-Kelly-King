@@ -1226,3 +1226,22 @@
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
 - `curl -fsS http://127.0.0.1:4173/` 能获取页面，页面包含 `￥1,500` 和 `￥5,600`。
+
+### AI 交互提示词教程整理
+
+完成文件：
+
+- `docs/08-ai-prompt-tutorial.md`
+- `README.md`
+
+完成内容：
+
+- 新增一份面向他人的 AI 开发教程，基于《湾区收买佬》的开发方式整理
+- 按从零开始到可玩版本的顺序，整理项目文档、页面骨架、拍品数据、玩家出价、NPC 竞价、成交库存、鉴定出售、7 天挑战、UI 优化、移动端、内容扩展等提示词实例
+- 补充通用提示词模板：每轮开始、Bug 修复、范围控制、自检
+- README 增加教程入口，方便分享给想复刻流程的人
+
+验证方式：
+
+- 直接检查 `docs/08-ai-prompt-tutorial.md` 内容结构完整
+- `git diff --check`
