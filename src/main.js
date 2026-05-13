@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v13';
+const STORAGE_KEY = 'kelly-king-save-v14';
 const TUTORIAL_KEY = 'kelly-king-tutorial-seen-v1';
 const MAX_LOG_ENTRIES = 80;
 
@@ -55,10 +55,10 @@ const MARKET_EVENTS = [
 
 const INITIAL_GAME_STATE = {
   phase: 9,
-  step: '9.2',
-  stepIndex: 2,
+  step: '9.3',
+  stepIndex: 3,
   phaseStepTotal: 3,
-  stepName: '发布页与移动端落地',
+  stepName: '试玩反馈收集方案',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -1189,6 +1189,57 @@ function resetGame() {
   addLog('对手已入场。加价后，他们会决定是否跟。');
 }
 
+function getFeedbackTemplate() {
+  const progressText = gameState.gameOver
+    ? `已打完整局，最终现金 ${formatCurrency(gameState.cash)}，库存 ${gameState.inventory.length} 件。`
+    : `试玩到第 ${gameState.day} 天第 ${Math.max(gameState.lotsSeenToday, 1)}/${gameState.lotsPerDay} 件，当前现金 ${formatCurrency(gameState.cash)}。`;
+
+  return [
+    '《捡漏之王》试玩反馈',
+    progressText,
+    '',
+    '1. 我第一次打开时，是否立刻知道目标和下一步要点？',
+    '答：',
+    '',
+    '2. 哪个环节最卡/最迷路？（看货、出价、对手、鉴定、库存、结算）',
+    '答：',
+    '',
+    '3. 哪一刻最有“捡漏/上头/后悔”的感觉？',
+    '答：',
+    '',
+    '4. 手机上按钮、文案、信息量是否清楚？',
+    '答：',
+    '',
+    '5. 如果只改一件事，你最希望改什么？',
+    '答：',
+  ].join('\n');
+}
+
+async function copyFeedbackTemplate() {
+  const feedbackText = getFeedbackTemplate();
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(feedbackText);
+    } else {
+      const node = document.createElement('textarea');
+      node.value = feedbackText;
+      node.setAttribute('readonly', '');
+      node.style.position = 'fixed';
+      node.style.opacity = '0';
+      document.body.appendChild(node);
+      node.focus();
+      node.select();
+      document.execCommand('copy');
+      node.remove();
+    }
+    playSound('success');
+    showToast('反馈模板已复制', 'success');
+  } catch (error) {
+    console.error('复制反馈模板失败', error);
+    showToast('复制失败，可以手动写：哪里迷路、哪里上头、最想改什么', 'warning');
+  }
+}
+
 async function copyShareText() {
   const shareText = document.querySelector('#shareText')?.value;
   if (!shareText) {
@@ -1238,6 +1289,7 @@ function bindPlayerActions() {
   });
   document.querySelector('#copyShareButton').addEventListener('click', copyShareText);
   document.querySelector('#copyResultButton').addEventListener('click', copyShareText);
+  document.querySelector('#copyFeedbackButton')?.addEventListener('click', copyFeedbackTemplate);
   document.querySelector('#tutorialSkipButton').addEventListener('click', () => closeTutorial(true));
   document.querySelector('#tutorialPrevButton').addEventListener('click', () => { tutorialStep = Math.max(0, tutorialStep - 1); renderTutorialStep(); });
   document.querySelector('#tutorialNextButton').addEventListener('click', () => {

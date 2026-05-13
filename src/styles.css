@@ -158,6 +158,27 @@ button.ghost,
   font-weight: 900;
 }
 .quick-rules strong { font-size: 0.96rem; }
+.feedback-card {
+  margin-bottom: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(104, 211, 145, 0.22);
+  border-radius: 20px;
+  background: rgba(104, 211, 145, 0.075);
+}
+.feedback-card div { min-width: 0; }
+.feedback-card span {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+.feedback-card strong {
+  display: block;
+  color: rgba(244, 239, 229, 0.9);
+  line-height: 1.45;
+}
+.feedback-card button { flex: 0 0 auto; }
 
 .brand h1 {
   margin: 0;
@@ -757,7 +778,8 @@ dd { margin: 5px 0 0; font-size: 1.08rem; font-weight: 900; }
   .app-shell { width: min(100% - 20px, 980px); padding-top: 16px; }
   .topbar { align-items: flex-start; }
   .brand h1 { font-size: 2.4rem; }
-  .landing-card { display: grid; }
+  .landing-card,
+  .feedback-card { display: grid; }
   .landing-copy h2 { max-width: 11ch; }
   .event-card { grid-template-columns: 1fr; gap: 5px; }
   .status-strip,
@@ -782,6 +804,7 @@ dd { margin: 5px 0 0; font-size: 1.08rem; font-weight: 900; }
   .landing-copy h2 { font-size: 2.15rem; }
   .landing-stats,
   .quick-rules,
+  .feedback-card,
   .status-strip,
   .item-tags,
   .decision-hints,

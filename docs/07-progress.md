@@ -991,16 +991,32 @@
 - `git diff --check`
 - 本地静态页面应包含“开始捡漏”、“￥1,200 起家”和“三步玩法”入口
 
+### Step 9.3 试玩反馈收集方案
+
+步骤位置：阶段 9 / Step 9.3（3/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 首页新增试玩反馈卡，提示试玩者重点反馈“哪里迷路、哪里上头、哪里想重来”。
+- 新增“复制反馈模板”按钮，根据当前进度生成可粘贴的反馈问题清单。
+- README 补充 5 个试玩反馈问题和下一轮迭代优先级。
+- 存档 key 升到 `kelly-king-save-v14`，当前阶段标记更新到 9.3。
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地页面应包含“试玩反馈”和“复制反馈模板”。
+
 ### 下一步
 
-建议继续：
-
-```text
-阶段 9 / Step 9.3（3/3）试玩反馈收集方案
-```
-
-范围限制：
-
-- 整理试玩反馈问题清单
-- 明确下一轮体验迭代优先级
-- 可补 README 中的反馈入口说明
+建议继续部署 GitHub Pages / Netlify，或进入阶段 10：根据真实试玩反馈修正流程、数值和移动端细节。

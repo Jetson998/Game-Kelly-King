@@ -241,7 +241,7 @@
 
 ## 当前推荐下一步
 
-当前推荐下一步：阶段 9 已推进到 Step 9.2，发布页与移动端落地优化已完成。下一步建议继续 Step 9.3 试玩反馈收集方案，或部署 GitHub Pages / Netlify。
+当前推荐下一步：阶段 9 已完成。下一步建议部署 GitHub Pages / Netlify，或进入阶段 10 做试玩反馈后的迭代修正。
 
 
 ## 阶段 7：体验增强
@@ -342,9 +342,9 @@
   - 文件：`src/index.html`, `src/styles.css`, `src/main.js`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
   - 验收：首页/README 更适合外部试玩入口，移动端首屏更像可直接开始的小游戏
   - 步骤位置：阶段 9 / Step 9.2（2/3）
-- [ ] Step 9.3 试玩反馈收集方案
-  - 文件：`README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
-  - 验收：整理试玩反馈问题清单与下一轮迭代方向
+- [x] Step 9.3 试玩反馈收集方案
+  - 文件：`src/index.html`, `src/main.js`, `src/styles.css`, `README.md`, `docs/06-task-backlog.md`, `docs/07-progress.md`
+  - 验收：整理试玩反馈问题清单与下一轮迭代方向，并在页面提供可复制反馈模板
   - 步骤位置：阶段 9 / Step 9.3（3/3）
 
 
@@ -404,5 +404,34 @@
 - 首屏应先看到明确目标、玩法卖点和“开始捡漏”按钮
 - 点击“开始捡漏”应滚动到拍卖主舞台，不影响自动存档与教程
 - 手机窄屏下 Hero、快速玩法、状态栏都应单列可读
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+
+
+### Step 9.3 试玩反馈收集方案
+
+步骤位置：阶段 9 / Step 9.3（3/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 首页新增“试玩反馈”卡片，明确引导试玩者反馈哪里迷路、哪里上头、哪里想重来。
+- 新增“复制反馈模板”按钮，会根据当前进度生成可粘贴的 5 问反馈清单。
+- README 补充试玩反馈建议，避免只问“好不好玩”，改为聚焦首屏理解、流程卡点、情绪峰值、移动端清晰度和最想改的一件事。
+- 明确下一轮迭代优先级：先修迷路点和移动端点击障碍，再调数值，最后扩内容。
+- 存档 key 升到 `kelly-king-save-v14`，同步当前阶段标记到 9.3。
+
+验证方式：
+
+- 首页应出现“试玩反馈”和“复制反馈模板”。
+- 点击“复制反馈模板”应提示“反馈模板已复制”，模板包含当前试玩进度。
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
