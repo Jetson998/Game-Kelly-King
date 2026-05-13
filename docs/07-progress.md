@@ -1123,3 +1123,26 @@
 - `node --check main.js auction.js data/items.js data/npcs.js src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
 - 本地静态页 grep 确认包含 `湾区收买佬`
+
+### MVP 移动端布局急修
+
+完成文件：
+
+- `src/styles.css`
+- `styles.css`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 根据手机截图反馈，快速压缩移动端首屏密度，减少大标题、引导卡、规则卡、状态卡占用高度
+- 移动端顶栏改为单列，操作按钮整行排列，避免标题栏与按钮互相挤压
+- 主操作区在小屏改为固定底栏，并为页面底部预留安全距离，避免按钮被页面尾部/系统底栏遮挡
+- 收紧拍品卡、判断提示、对手动向、日志等模块间距，优先保证 MVP 可玩和可读
+- 增加 380px 以下兜底断点，处理窄屏文字溢出和按钮拥挤
+- 同步根目录发布样式，确保 GitHub Pages 版本生效
+
+验证方式：
+
+- `node --check main.js auction.js data/items.js data/npcs.js src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地页面确认标题为“湾区收买佬”，移动端底部主按钮保持可点击
