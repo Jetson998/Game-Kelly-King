@@ -760,3 +760,29 @@
 - `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
 - `git diff --check`
 - 本地静态页面应能正常加载，并能在结束态看到称号、成就统计和三张复盘卡片
+
+
+### Step 7.1 复盘策略建议
+
+步骤位置：阶段 7 / Step 7.1（1/3）
+
+完成文件：
+
+- `src/main.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 在结算复盘基础上新增“下局怎么打”策略建议
+- 根据是否达标、最终资产、库存数量、变现数量、打眼次数、平均买入价、热点利用情况生成 3-4 条建议
+- 存档 key 升到 `kelly-king-save-v7`，避免旧复盘状态缺少策略字段
+- 新增策略建议区样式，保持移动端可读
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- VM smoke test：构造复盘记录后应能生成策略建议 HTML

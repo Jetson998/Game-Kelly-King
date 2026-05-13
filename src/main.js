@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v6';
+const STORAGE_KEY = 'kelly-king-save-v7';
 const MAX_LOG_ENTRIES = 80;
 
 const BALANCE_CONFIG = {
@@ -54,10 +54,10 @@ const MARKET_EVENTS = [
 
 const INITIAL_GAME_STATE = {
   phase: 6,
-  step: '6.3',
-  stepIndex: 3,
+  step: '7.1',
+  stepIndex: 1,
   phaseStepTotal: 3,
-  stepName: '成就与复盘',
+  stepName: '复盘策略建议',
   day: 1,
   totalDays: 7,
   lotsPerDay: 5,
@@ -294,7 +294,7 @@ function updateSaveStatus(text) {
 
 function getSerializableGameState() {
   return {
-    version: 6,
+    version: 7,
     savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,
@@ -778,12 +778,65 @@ function getFinalRecap(records, finalAssets, isWin) {
   return { boughtCount, soldCount, inventoryCount, realizedProfit, bestBargain, bestCashDeal, worstMistake, title };
 }
 
+function getStrategyAdvice(records, recap, finalAssets, isWin) {
+  const advice = [];
+  const badDeals = records.filter((record) => record.appraisalProfit < 0);
+  const hotDeals = records.filter((record) => record.item.category === gameState.hotCategory);
+  const averageBuyPrice = records.length > 0 ? records.reduce((total, record) => total + record.purchasePrice, 0) / records.length : 0;
+  const cashGap = gameState.targetCash - gameState.cash;
+
+  if (isWin) {
+    advice.push('现金目标已过线：这局节奏是对的，后期优先保现金，不必每件都追。');
+  } else if (finalAssets >= gameState.targetCash && cashGap > 0) {
+    advice.push('资产够、现金不够：下局最后两天少压库存，多用“马上变现”把利润落袋。');
+  } else {
+    advice.push('目标没过线：前两天要多试探低价货，别把本金锁在高风险单里。');
+  }
+
+  if (recap.inventoryCount >= 2) {
+    advice.push('库存偏重：库存上限只有 4 件，看到非热点货时更适合快进快出。');
+  } else if (recap.soldCount >= Math.max(2, recap.boughtCount - 1)) {
+    advice.push('变现很积极：现金流稳定，但遇到明显大漏可以留一件等热点刷新。');
+  }
+
+  if (badDeals.length >= 2) {
+    advice.push('打眼次数偏多：风险词出现“暗病、返修、仿品、受潮、来源不明”时，不要用强抢加价。');
+  } else if (recap.bestBargain && recap.bestBargain.appraisalProfit > 700) {
+    advice.push('眼力有亮点：你能抓到大价差，下局重点盯“估值跨度大但风险可控”的货。');
+  }
+
+  if (averageBuyPrice > BALANCE_CONFIG.startingCash * 0.55) {
+    advice.push('单件买入过重：本金少时，单件超过一半现金会让后面失去选择权。');
+  }
+
+  if (hotDeals.length === 0 && records.length >= 3) {
+    advice.push('热点利用不足：今日热点通常更好卖，价格没过估值上沿前可以多看一眼。');
+  }
+
+  return advice.slice(0, 4);
+}
+
+function renderStrategyAdvice(advice) {
+  return `
+    <section class="strategy-advice" aria-label="下局建议">
+      <div class="section-mini-title">
+        <strong>下局怎么打</strong>
+        <span>根据这一局自动复盘</span>
+      </div>
+      <ol>
+        ${advice.map((text) => `<li>${text}</li>`).join('')}
+      </ol>
+    </section>
+  `;
+}
+
 function renderGameResult() {
   const inventoryValue = getInventoryValue();
   const finalAssets = gameState.cash + inventoryValue;
   const isWin = gameState.cash >= gameState.targetCash;
   const records = getFinalDealRecords();
   const recap = getFinalRecap(records, finalAssets, isWin);
+  const strategyAdvice = getStrategyAdvice(records, recap, finalAssets, isWin);
   const resultPanel = document.querySelector('#resultPanel');
   resultPanel.hidden = false;
   resultPanel.classList.toggle('win', isWin);
@@ -810,6 +863,7 @@ function renderGameResult() {
       ${renderRecordCard(recap.bestCashDeal, '还没有变现收益')}
       ${renderRecordCard(recap.worstMistake, '还没有最亏打眼')}
     </section>
+    ${renderStrategyAdvice(strategyAdvice)}
   `;
   return { finalAssets };
 }

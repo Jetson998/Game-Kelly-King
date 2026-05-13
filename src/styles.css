@@ -517,6 +517,24 @@ dd { margin: 5px 0 0; font-size: 1.08rem; font-weight: 900; }
 .recap-card.bad { border-color: rgba(252, 129, 129, 0.25); background: rgba(252, 129, 129, 0.09); }
 .recap-card.muted-card { opacity: 0.72; }
 
+.strategy-advice {
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid rgba(247, 189, 75, 0.22);
+  border-radius: 18px;
+  background: rgba(247, 189, 75, 0.08);
+}
+.strategy-advice ol {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 0;
+  padding-left: 1.2rem;
+}
+.strategy-advice li {
+  color: rgba(244, 239, 229, 0.92);
+  line-height: 1.55;
+}
+
 @media (max-width: 760px) {
   .app-shell { width: min(100% - 20px, 980px); padding-top: 16px; }
   .topbar { align-items: flex-start; }
