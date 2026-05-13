@@ -665,3 +665,38 @@
 ### 当前状态
 
 阶段 5 / Step 5.3 已完成。项目已具备第一版可分享试玩状态。
+
+
+### Step 6.1 每日拍场事件
+
+步骤位置：阶段 6 / Step 6.1（1/3）
+
+完成文件：
+
+- `src/index.html`
+- `src/main.js`
+- `src/auction.js`
+- `src/styles.css`
+- `README.md`
+- `docs/06-task-backlog.md`
+- `docs/07-progress.md`
+
+完成内容：
+
+- 新增 5 个每日拍场事件：查货风声紧、现金客进场、雨天冷场、捡漏传闻散开、中间人收货
+- 每天随机事件且避免连续重复；事件状态写入 localStorage 存档
+- 事件影响快速出售报价与 NPC 出价激进度，让每天的市场节奏更有变化
+- 页面在财富进度下方新增“拍场风声”卡片，保持主流程仍聚焦“现在买不买”
+- 存档 key 升级到 `kelly-king-save-v5`，避免旧版本缺少事件字段导致体验混杂
+
+验证方式：
+
+- `node --check src/main.js src/auction.js src/data/items.js src/data/npcs.js`
+- `git diff --check`
+- 本地静态页面应显示“拍场风声”，刷新恢复后事件名称与说明保持一致
+
+下一步建议：
+
+```text
+阶段 6 / Step 6.2（2/3）更多拍品与风险词
+```

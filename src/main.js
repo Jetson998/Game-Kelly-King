@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'kelly-king-save-v4';
+const STORAGE_KEY = 'kelly-king-save-v5';
 const MAX_LOG_ENTRIES = 80;
 
 const BALANCE_CONFIG = {
@@ -13,6 +13,44 @@ const BALANCE_CONFIG = {
     { maxDay: 7, minValue: 650, maxValue: Infinity },
   ],
 };
+
+const MARKET_EVENTS = [
+  {
+    id: 'inspectors-nearby',
+    name: '查货风声紧',
+    summary: '今天档口出货谨慎，快速变现会被压一点价，但抬价托也不敢太疯。',
+    saleMultiplier: 0.94,
+    npcAggression: 0.94,
+  },
+  {
+    id: 'cash-buyers',
+    name: '现金客进场',
+    summary: '场里来了几个现金客，好货更容易被抢，库存报价也更漂亮。',
+    saleMultiplier: 1.08,
+    npcAggression: 1.08,
+  },
+  {
+    id: 'rainy-market',
+    name: '雨天冷场',
+    summary: '人少，开价没那么凶；但买家也少，转手价略保守。',
+    saleMultiplier: 0.98,
+    npcAggression: 0.88,
+  },
+  {
+    id: 'rumor-spread',
+    name: '捡漏传闻散开',
+    summary: '有人说昨天出了大漏，所有人都更上头，别被气氛带走。',
+    saleMultiplier: 1,
+    npcAggression: 1.16,
+  },
+  {
+    id: 'broker-rounds',
+    name: '中间人收货',
+    summary: '有中间人在场里游走收货，卖出报价更高，但热门货也更难低价拿。',
+    saleMultiplier: 1.12,
+    npcAggression: 1.04,
+  },
+];
 
 const INITIAL_GAME_STATE = {
   phase: 6,
@@ -30,6 +68,8 @@ const INITIAL_GAME_STATE = {
   inventoryLimit: BALANCE_CONFIG.inventoryLimit,
   hotCategory: '华强北电子货',
   lastHotCategory: null,
+  marketEvent: null,
+  lastMarketEventId: null,
   currentPrice: 0,
   leader: '暂无',
   currentItem: null,
@@ -50,6 +90,7 @@ function createInitialGameState() {
     inventory: [],
     npcs: [],
     seenItemIds: [],
+    marketEvent: null,
     logs: [...INITIAL_GAME_STATE.logs],
   };
 }
@@ -90,6 +131,11 @@ function getMarketCategories() {
 function pickDailyHotCategory() {
   const categories = getMarketCategories().filter((category) => category !== gameState.lastHotCategory);
   return pickOne(categories.length > 0 ? categories : getMarketCategories());
+}
+
+function pickDailyMarketEvent() {
+  const events = MARKET_EVENTS.filter((event) => event.id !== gameState.lastMarketEventId);
+  return pickOne(events.length > 0 ? events : MARKET_EVENTS);
 }
 
 function getMarketReport(category) {
@@ -190,7 +236,8 @@ function calculateSalePrice(item) {
   const saleRange = item.category === gameState.hotCategory
     ? BALANCE_CONFIG.hotSaleMultiplier
     : BALANCE_CONFIG.normalSaleMultiplier;
-  return Math.round(item.realValue * getRandomMultiplier(saleRange.min, saleRange.max));
+  const eventMultiplier = gameState.marketEvent?.saleMultiplier ?? 1;
+  return Math.round(item.realValue * getRandomMultiplier(saleRange.min, saleRange.max) * eventMultiplier);
 }
 
 function getProfitAmount(entry) {
@@ -245,7 +292,7 @@ function updateSaveStatus(text) {
 
 function getSerializableGameState() {
   return {
-    version: 3,
+    version: 5,
     savedAt: new Date().toISOString(),
     phase: gameState.phase,
     step: gameState.step,
@@ -262,6 +309,8 @@ function getSerializableGameState() {
     inventoryLimit: gameState.inventoryLimit,
     hotCategory: gameState.hotCategory,
     lastHotCategory: gameState.lastHotCategory,
+    marketEvent: gameState.marketEvent,
+    lastMarketEventId: gameState.lastMarketEventId,
     currentPrice: gameState.currentPrice,
     leader: gameState.leader,
     currentItem: gameState.currentItem,
@@ -298,6 +347,8 @@ function hydrateSaveData(saveData) {
     inventory: Array.isArray(saveData.inventory) ? saveData.inventory : [],
     npcs: Array.isArray(saveData.npcs) ? saveData.npcs : [],
     seenItemIds: Array.isArray(saveData.seenItemIds) ? saveData.seenItemIds : [],
+    marketEvent: saveData.marketEvent ?? null,
+    lastMarketEventId: saveData.lastMarketEventId ?? null,
     logs: Array.isArray(saveData.logs) && saveData.logs.length > 0 ? saveData.logs : [...INITIAL_GAME_STATE.logs],
   };
 }
@@ -419,6 +470,8 @@ function renderState() {
   document.querySelector('#cashText').textContent = formatCurrency(gameState.cash);
   document.querySelector('#inventoryText').textContent = `${gameState.inventory.length} / ${gameState.inventoryLimit}`;
   document.querySelector('#hotCategoryText').textContent = gameState.hotCategory;
+  document.querySelector('#eventNameText').textContent = gameState.marketEvent?.name ?? '暂无风声';
+  document.querySelector('#eventSummaryText').textContent = gameState.marketEvent?.summary ?? '今天场面平稳，照常看货出价。';
   document.querySelector('#currentPriceText').textContent = formatCurrency(gameState.currentPrice);
   document.querySelector('#leaderText').textContent = gameState.leader === '暂无' ? getAuctionStatusLabel() : `${gameState.leader} 领先`;
   if (gameState.gameOver) {
@@ -584,11 +637,13 @@ function rerollInventorySalePrices(reason = '市场热度变化') {
 function startNewMarketDay(isFirstDay = false) {
   gameState.lastHotCategory = gameState.hotCategory;
   gameState.hotCategory = pickDailyHotCategory();
+  gameState.lastMarketEventId = gameState.marketEvent?.id ?? gameState.lastMarketEventId;
+  gameState.marketEvent = pickDailyMarketEvent();
   if (isFirstDay) {
-    addLog(`今日热点：${gameState.hotCategory}。${getMarketReport(gameState.hotCategory)}`);
+    addLog(`今日热点：${gameState.hotCategory}。${getMarketReport(gameState.hotCategory)} 风声：${gameState.marketEvent.name}，${gameState.marketEvent.summary}`);
     return;
   }
-  addLog(`第 ${gameState.day} 天开场。今日热点：${gameState.hotCategory}。`);
+  addLog(`第 ${gameState.day} 天开场。热点：${gameState.hotCategory}。风声：${gameState.marketEvent.name}。`);
   rerollInventorySalePrices('新一天行情变动');
 }
 
@@ -613,7 +668,7 @@ function loadNextItem() {
   gameState.lotsSeenToday += 1;
   gameState.currentPrice = gameState.currentItem.startPrice;
   gameState.leader = '暂无';
-  gameState.npcs = createAuctionNpcs(gameState.currentItem, gameState.hotCategory);
+  gameState.npcs = createAuctionNpcs(gameState.currentItem, gameState.hotCategory, gameState.marketEvent);
   gameState.hasPassed = false;
   gameState.auctionEnded = false;
   gameState.settlementDone = false;

@@ -44,13 +44,14 @@ function getRarityExcitement(npc, item) {
   return 1;
 }
 
-function createAuctionNpcs(item, hotCategory) {
+function createAuctionNpcs(item, hotCategory, marketEvent = null) {
+  const eventAggression = marketEvent?.npcAggression ?? 1;
   return AUCTION_NPCS.map((npc) => {
     const estimateNoise = randomBetween(1 - npc.errorRate, 1 + npc.errorRate);
     const aggression = randomBetween(npc.aggressionMin, npc.aggressionMax);
     const categoryAffinity = getCategoryAffinity(npc, item, hotCategory);
     const rarityExcitement = getRarityExcitement(npc, item);
-    const maxBid = roundToBidStep(item.realValue * estimateNoise * aggression * categoryAffinity * rarityExcitement);
+    const maxBid = roundToBidStep(item.realValue * estimateNoise * aggression * categoryAffinity * rarityExcitement * eventAggression);
 
     return {
       ...npc,
